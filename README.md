@@ -78,7 +78,7 @@ robot and opens no device.
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Repository gate and unit tests pass | Partially verified (local 2026-11-26; CI pending) | `evidence/20261126_scaffold/` |
+| Repository gate and unit tests pass | Verified (L0/L1, 2026-11-26) | `evidence/20261126_scaffold/`; [CI run](https://github.com/JCHENG-Robotics/jcheng-teleop/actions/runs/45763190477) |
 | Manifest declares `hardware_access: none` and an empty runtime surface | Verified (L0, 2026-11-26) | `tests/test_contract.py` |
 | No device, vendor topic or motion call exists in the tree | Verified (L0, 2026-11-26) | `tests/test_no_hardware.py` |
 | Teleoperation intent behavior | Unverified | Not implemented (M1–M2) |

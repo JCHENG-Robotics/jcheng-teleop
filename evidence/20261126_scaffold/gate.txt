@@ -9,3 +9,6 @@ Repository gate OK: document set, manifest, no LICENSE, no secrets, no weights, 
 
 # extra check: capability.yaml against jcheng-interfaces capability-manifest.v1.schema.json
 capability.yaml validates against capability-manifest.v1.schema.json
+
+# CI: teleop-gate on 50bf6dd passed
+# https://github.com/JCHENG-Robotics/jcheng-teleop/actions/runs/45763190477

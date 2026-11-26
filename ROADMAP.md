@@ -1,14 +1,14 @@
 # jcheng-teleop roadmap
 
-> Status: **v0.1.0** as of 2026-11-26. Admission-only scaffold; no input
-> adapter, no runtime node and no hardware access.
+> Status: **v0.1.0** as of 2026-11-26. Admission-only scaffold complete; no
+> input adapter, no runtime node and no hardware access.
 
 ## Current state
 
 | Item | State | Evidence |
 |---|---|---|
 | Admission manifest (`capability.yaml`) | Complete (2026-11-26) | `capability.yaml`; `tests/test_contract.py` |
-| Repository scaffold, gate and CI | In progress | `scripts/check_repo_gate.sh`; CI `teleop-gate` |
+| Repository scaffold, gate and CI | Complete (2026-11-26) | `scripts/check_repo_gate.sh`; CI `teleop-gate` passed |
 | ROS-free intent core (conditioning, rate limit, deadman) | Planned | — |
 | ROS 2 teleoperation intent node | Planned | — |
 | Supervised hardware teleoperation | Not started | — |
@@ -17,7 +17,7 @@
 
 | Milestone | Scope | State | Exit criterion | Evidence |
 |---|---|---|---|---|
-| M0 | Repository scaffold and admission manifest | In progress | The document set, gate and CI `teleop-gate` pass; the manifest claims no runtime surface | `evidence/20261126_scaffold/` |
+| M0 | Repository scaffold and admission manifest | Complete (2026-11-26) | The document set, gate and CI `teleop-gate` pass; the manifest claims no runtime surface | `evidence/20261126_scaffold/`; CI run 45763190477 |
 | M1 | ROS-free intent core | Planned | Deterministic tests cover input samples, deadzone, scaling, per-axis limits, rate limiting, `seq`/`stamp` and the deadman state machine; no DDS, no device and no hardware | — |
 | M2 | Teleoperation intent node on the system API | Planned | A contract-first PR enables the reserved `TeleopCommand` stream on domain 42; mock integration (L2/L3) proves lease gating, preemption and deadman behavior; no motion | — |
 | M3 | Supervised hardware teleoperation | Planned | An operator-side adapter feeds the node; every session is separately authorized; the system layer applies limits and the stop latch; L5 evidence is recorded | — |

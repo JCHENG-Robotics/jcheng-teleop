@@ -70,7 +70,7 @@ bash scripts/check_repo_gate.sh
 
 | 声明 | 状态 | 证据 |
 |---|---|---|
-| 仓库门禁与单元测试通过 | 部分验证（本地 2026-11-26；CI 待运行） | `evidence/20261126_scaffold/` |
+| 仓库门禁与单元测试通过 | 已验证（L0/L1，2026-11-26） | `evidence/20261126_scaffold/`；[CI 运行](https://github.com/JCHENG-Robotics/jcheng-teleop/actions/runs/45763190477) |
 | 清单声明 `hardware_access: none` 且运行时表面为空 | 已验证（L0，2026-11-26） | `tests/test_contract.py` |
 | 仓库中不存在设备、厂商话题或运动调用 | 已验证（L0，2026-11-26） | `tests/test_no_hardware.py` |
 | 遥操作意图行为 | 未验证 | 尚未实现（M1–M2） |
