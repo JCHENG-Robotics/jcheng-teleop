@@ -3,7 +3,7 @@
 
 > 状态：**实验性**，2026-11-26。版本 0.3.0。
 > M0 设计已批准；M1 的 ROS-free 核心与 CLI 已实现，并有 L1 与进程内 L2 测试；
-> M1 已在 L1/进程内 L2 层面验收；M2 进行中：System 侧 mock teleop intake 已在 `jcheng-system` 分支落地；ROS 订阅端与仿真桥待完成。
+> M1 已在 L1/进程内 L2 层面验收；M2 进行中：System 侧 mock teleop intake 与 ROS 订阅端已在 `jcheng-system` 分支落地；Teleop DDS publisher 与仿真桥待完成。
 > 目前仍无 ROS 节点、无 DDS 域、无输入设备访问、不发布意图、不产生运动。实体操作员输入适配器位于本仓库之外；无设备输入源
 > 与映射位于仓库内。运行中的机器人不会使用其中任何内容。
 >

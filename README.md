@@ -4,8 +4,8 @@
 > Status: **Experimental** as of 2026-11-26. Version 0.3.0.
 > M0 design is approved. The M1 ROS-free core and CLI are implemented and
 > covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
-> In progress: the mock system-core teleop intake has landed on a
-> `jcheng-system` branch; the ROS subscriber and simulation bridge are pending. There is still no ROS node, no DDS
+> In progress: the mock system-core teleop intake and ROS subscriber have landed on a
+> `jcheng-system` branch; the teleop DDS publisher and simulation bridge are pending. There is still no ROS node, no DDS
 > domain, no input device access, no published intent and no motion. The
 > physical operator input adapter is outside this repository; device-free input
 > sources and mappings are in-repo. Nothing here is used by the running robot.
