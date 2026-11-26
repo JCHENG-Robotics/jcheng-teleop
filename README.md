@@ -5,8 +5,8 @@
 > M0 design is approved. The M1 ROS-free core and CLI are implemented and
 > covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
 > In progress: the mock system intake/ROS subscriber and the teleop ROS publisher have
-> landed; an ArmPi test-only simulation bridge and L3 probe are in place.
-> Multi-robot, canonical domain-42 deployment and Humble validation are pending. There is still no ROS node, no DDS
+> landed; an ArmPi test-only simulation bridge, L3 probe and Humble build are in
+> place. Multi-robot and canonical domain-42 deployment remain pending. There is still no ROS node, no DDS
 > domain, no input device access, no published intent and no motion. The
 > physical operator input adapter is outside this repository; device-free input
 > sources and mappings are in-repo. Nothing here is used by the running robot.
@@ -113,7 +113,7 @@ against an in-process mock gateway. Neither touches a robot or opens a device.
 | M0 document set, links, manifest and static no-device scan pass | Verified (L0/L1, 2026-11-26) | `evidence/20261126_m0_design/`; `tests/` |
 | M1 ROS-free core: conditioning, mapping, deadman, session, mock gateway | Partially verified (L1, 2026-11-26; M1 acceptance pending) | `evidence/20261126_m1_core/`; `tests/` |
 | M1 deterministic trace and no-device boundary | Partially verified (L1/L2 in-process, 2026-11-26; acceptance pending) |
-| M2 ROS 2 intent publisher (mock) | Partially verified (build + smoke, 2026-11-26; no end-to-end sim) | `ros2_ws/src/jcheng_teleop_ros/README.md` | `evidence/20261126_m1_core/`; `tests/test_runner_determinism.py` |
+| M2 ROS 2 intent publisher (mock) | Partially verified (Jazzy/Humble build, 2026-11-26) | `ros2_ws/src/jcheng_teleop_ros/README.md`; `evidence/20261126_m2_ros/` | `evidence/20261126_m1_core/`; `tests/test_runner_determinism.py` |
 | Ecosystem audit and cross-repository contract gaps are recorded | Verified (L0, 2026-11-26) | [docs/INTEGRATION_CONTRACT.md](docs/INTEGRATION_CONTRACT.md); [docs/DEPENDENCY_REVIEW.md](docs/DEPENDENCY_REVIEW.md) |
 | Input conditioning, mapping, sessions and deadman behavior | Partially verified (L1, 2026-11-26; acceptance pending) | `tests/test_conditioning.py`, `test_deadman.py`, `test_session.py` |
 | Intent publication, lease gating and preemption | Unverified | Not implemented (M2); system consumer absent |

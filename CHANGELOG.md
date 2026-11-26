@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format based on
 
 ## [Unreleased]
 
+### Added
+
+- M2 ROS 2 publisher `ros2_ws/src/jcheng_teleop_ros` and its Humble build
+  evidence. The publisher takes an operator-supplied lease id and never mints
+  one.
+- ArmPi test-only simulation L3 evidence is recorded in `jcheng-system`
+  (`e2e/reports/20261126_teleop_sim/`); a Jazzy/Humble build record is in
+  `evidence/20261126_m2_ros/`.
+
+
 ## [0.3.0] — 2026-11-26
 
 > M1 candidate; tag after merge. Contract remains `jcheng-interfaces` v0.1.0.

@@ -29,7 +29,7 @@
 |---|---|---|---|---|
 | M0 | Admission, architecture, contract and dependency review, M1 plan | Complete (approved 2026-11-26) | Document set, research record, proposals, gate and review pass; operator approved; commit/tag remains an explicit request | `evidence/20261126_m0_design/` |
 | M1 | ROS-free deterministic core, virtual/keyboard/JSONL/gamepad mapping, profile mapping, safety state machine, in-process mock gateway | Complete (2026-11-26); L1/in-process L2 accepted | 111 tests pass; no DDS, device, recording or hardware | `evidence/20261126_m1_core/` |
-| M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher + ArmPi L3 sim bridge landed; multi-robot/domain42/Humble pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
+| M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher + ArmPi L3 sim bridge + Humble build landed; multi-robot/domain42 pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
 | M3 | Episode capture, time synchronization, provenance and quality gate | Planned | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | — |
 | M4 | Offline replay, anomaly detection and LeRobot v3 export | Planned | Byte-identical replay; benchmark scores; LeRobot round-trip equality | — |
 | M5 | Studio teleoperation panel and session UX | Planned | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | — |
