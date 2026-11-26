@@ -68,6 +68,8 @@ hardware.
 | Observation rows copy `truth`/`verification` and gate `bus`/`simulated` by environment; a rejected row is recorded as an event | L1 | `tests/test_capture.py`; `capture/observation.py` |
 | The recorder cannot block the tick loop or the stop path (bounded queue, observer isolation, stop on recorder fault) | L1/L2 | `tests/test_capture.py`; `core/runner.py` |
 | A sealed capture re-reads with matching hashes; tampering is detected | L1 | `tests/test_capture.py`; `capture/verify.py` |
+| Input replay re-derives recorded actions byte-identically; tampering and missing inputs are findings | L1 | `tests/test_replay.py`; `evidence/20261126_m4_replay/` |
+| A capture with a `bus` label in a non-hardware environment, or non-monotonic time, is an anomaly error | L1 | `tests/test_replay.py`; `replay/anomaly.py` |
 | 30 × 60 s mock captures are valid with complete provenance and 0 label violations | L1 | `tools/capture_acceptance_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | A storage write failure faults the recorder, sends a stop and stops the session; no tick is blocked | L1 | `tools/disk_full_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | No device, vendor topic, motion call, model weight or recording exists in the tree | L0 | `tests/test_no_hardware.py`; gate |
@@ -81,7 +83,7 @@ hardware.
 | Simulation bridge and multi-robot teleoperation | Test-only bridge; ArmPi, Gate-2 and PiPER X mock L3 proven on domain 42 + 43 | No hardware or canonical PiPER X profile |
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
 | Episode capture | Capture core implemented (M3): provenance gate, non-blocking writer, seal/verify, 26 tests, mock CLI recording, ROS-harness observation rows from the system telemetry tap, a 30 × 60 s mock acceptance set and a storage-fault drill; media, a simulation/hardware episode set and cross-stream time sync open | No demonstration dataset yet |
-| Offline replay, quality evaluation and LeRobot export | Not implemented (M4) | No replay/export evidence |
+| Offline replay | Input replay implemented (M4 slice 1): recorded mock/simulation captures replay with 0 divergences; anomaly scan covers schema, tick/time order, stop/deadman, label and coverage checks; replay imports no runtime/network module. Command replay, quality metrics, benchmark export and LeRobot export open | No export evidence yet |
 | Studio teleoperation panel | Not implemented (M5) | Operator cannot observe a live session |
 | Leader-arm and hardware teleoperation | Not implemented (M6); vendor executor cannot stream multi-joint | No hardware claim; no e-stop |
 | Independent M1 code review | Round 1 REJECT; Round 2 APPROVE WITH CHANGES; final re-review pending | M1 acceptance is not final |

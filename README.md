@@ -12,10 +12,12 @@
 > non-blocking writer, seal/verify) records mock CLI runs, and the ROS demo
 > harness records labelled observation rows from the system telemetry tap;
 > media, hardware sessions and the 30-episode acceptance are not implemented.
-> There is still no input device access, no lease adapter and no production
-> gateway client. The physical operator input adapter is outside this
-> repository; device-free input sources and mappings are in-repo. Nothing here
-> is used by the running robot.
+> M4 has started: input replay and an anomaly scan run offline over recorded
+> captures; command replay, benchmark export and the LeRobot adapter are not
+> implemented. There is still no input device access, no lease adapter and no
+> production gateway client. The physical operator input adapter is outside
+> this repository; device-free input sources and mappings are in-repo. Nothing
+> here is used by the running robot.
 >
 > English canonical; the Chinese README is a translation.
 
@@ -71,7 +73,7 @@ jcheng-teleop/
 │   ├── INPUT.md                    # input sample and adapter boundary
 │   ├── M1_PLAN.md                  # M1 work packages, tree, test matrix, blockers
 │   └── proposals/                  # contract-first proposals; no interface is changed
-├── src/jcheng_teleop/              # ROS-free core, adapters, capture, CLI
+├── src/jcheng_teleop/              # ROS-free core, adapters, capture, replay, CLI
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 intent publisher
 ├── examples/armpi_ultra_demo/      # ArmPi demo profile + binding
 ├── examples/gate2_arm_demo/        # Gate-2 demo profile + binding

@@ -302,17 +302,26 @@ LeRobot v3.0 export:
 Replay is offline and has no gateway port. It uses the same core with a fake
 clock, so a replay cannot accidentally connect to a live system.
 
-| Mode | Input | What is compared |
-|---|---|---|
-| Input replay | `input.jsonl` | Recorded action intent vs re-derived action intent |
-| Command replay | Recorded action intent | Recorded wire command vs re-derived wire command |
-| Episode replay | All rows | Timing, events, limits, stop path and provenance |
+| Mode | Input | What is compared | State |
+|---|---|---|---|
+| Input replay | `input.jsonl` | Recorded action intent vs re-derived action intent (fresh conditioner + mapper) | Implemented (`jcheng_teleop/replay/`) |
+| Command replay | Recorded action intent | Recorded wire command vs re-derived wire command | Not implemented: `command.jsonl` does not record the submitted payload |
+| Episode replay | All rows | Timing, events, limits, stop path and provenance | Partially: schema/tick/time/label scan implemented; limit/stop-latency metrics are not |
 
-Anomaly codes include: non-monotonic time, sequence gap, missing tick, action
-divergence above the declared epsilon, unexpected limit clamp, deadman edge
-mismatch, lease/gateway state mismatch, missing measurement row, provenance
-mismatch and data-hash mismatch. A divergence is a finding, not a reason to
-edit the recording.
+`jcheng-teleop-replay` exits 0 on a clean replay, 1 on a divergence or anomaly
+error, and 2 on a verification or profile-hash mismatch. A capture that fails
+seal verification is never replayed.
+
+Anomaly codes implemented: unexpected schema, duplicate/regressed `tick_id`,
+non-monotonic `t_mono_ns`, stop intent with `deadman=true`, non-finite action
+values, command without an action at the same tick, `bus` label outside a
+hardware capture, `simulated` label outside a simulation capture, and a tick
+gap over 50. A divergence is a finding, not a reason to edit the recording.
+
+Two fixes came out of the first replay: priority rows must not reorder a
+stream (the writer is FIFO; priority only decides drop order), and the session
+must expose the stop intent it sends (`TickResult.stop_intent`) so a stop is
+auditable as an `action` row.
 
 The replay report is an evaluation artifact. It never rewrites the capture and
 is never reported as a new demonstration or as hardware evidence.

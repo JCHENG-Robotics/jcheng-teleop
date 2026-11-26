@@ -2,11 +2,12 @@
 
 `record()` only appends to an in-memory queue: it never opens, writes or flushes
 a file on the caller's thread, so the control loop and the stop path are never
-waiting on storage. A background thread drains the queue; a failure marks the
-writer `faulted` and is reported at seal time instead of propagating into the
-tick loop. When the queue is full, ordinary rows are dropped first; priority
-rows (stop intent, safety/fault events, gateway results) are dropped only if no
-ordinary row remains.
+waiting on storage. A background thread drains the queue in FIFO order, so rows
+keep their per-stream order. A failure marks the writer `faulted` and is
+reported at seal time instead of propagating into the tick loop. When the queue
+is full, ordinary rows are dropped first; priority rows (stop intent,
+safety/fault events, gateway results) are dropped only if no ordinary row
+remains.
 """
 
 from __future__ import annotations
@@ -77,8 +78,10 @@ class CaptureWriter:
 
         self.queue_limit = queue_limit
         self.drain_delay_s = drain_delay_s
-        self._normal: deque[tuple[str, dict[str, Any]]] = deque()
-        self._priority: deque[tuple[str, dict[str, Any]]] = deque()
+        # One FIFO queue: rows keep their enqueue order per stream (a priority
+        # row must not jump ahead of earlier rows). `priority` only decides who
+        # is dropped when the queue is full.
+        self._queue: deque[tuple[str, dict[str, Any], bool]] = deque()
         self._condition = threading.Condition()
         self._closed = False
         self._fault: str | None = None
@@ -116,14 +119,12 @@ class CaptureWriter:
                 if self._closed or self._fault is not None:
                     self.dropped[stream] += 1
                     return False
-                size = len(self._normal) + len(self._priority)
-                if size >= self.queue_limit:
+                if len(self._queue) >= self.queue_limit:
                     dropped = self._drop_one_locked()
                     if not dropped:
                         self.dropped[stream] += 1
                         return False
-                queue = self._priority if priority else self._normal
-                queue.append((stream, row))
+                self._queue.append((stream, row, priority))
                 self.accepted[stream] += 1
                 self._condition.notify()
                 return True
@@ -132,12 +133,13 @@ class CaptureWriter:
             return False
 
     def _drop_one_locked(self) -> bool:
-        if self._normal:
-            stream, _ = self._normal.popleft()
-            self.dropped[stream] += 1
-            return True
-        if self._priority:
-            stream, _ = self._priority.popleft()
+        for index, (stream, _row, priority) in enumerate(self._queue):
+            if not priority:
+                del self._queue[index]
+                self.dropped[stream] += 1
+                return True
+        if self._queue:
+            stream, _row, _priority = self._queue.popleft()
             self.dropped[stream] += 1
             self.dropped_priority += 1
             return True
@@ -163,10 +165,8 @@ class CaptureWriter:
         count = 0
         while True:
             with self._condition:
-                if self._priority:
-                    stream, row = self._priority.popleft()
-                elif self._normal:
-                    stream, row = self._normal.popleft()
+                if self._queue:
+                    stream, row, _priority = self._queue.popleft()
                 else:
                     return count
             self._write_row(stream, row)
@@ -175,9 +175,9 @@ class CaptureWriter:
     def _drain_loop(self) -> None:
         while True:
             with self._condition:
-                while not self._closed and not self._priority and not self._normal:
+                while not self._closed and not self._queue:
                     self._condition.wait(timeout=0.5)
-                if self._closed and not self._priority and not self._normal:
+                if self._closed and not self._queue:
                     return
             try:
                 self._drain_once()
@@ -186,8 +186,7 @@ class CaptureWriter:
             except Exception as exc:  # storage error: fail closed for the capture
                 with self._condition:
                     self._fault = f"{type(exc).__name__}: {exc}"
-                    self._normal.clear()
-                    self._priority.clear()
+                    self._queue.clear()
                     self._condition.notify_all()
                 return
 

@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import sys
+import time
 
 from jcheng_interfaces.msg import RobotState, TeleopCommand
 from rclpy.node import Node
@@ -196,7 +197,9 @@ class TeleopPublisher(Node):
     def _on_state(self, message: RobotState) -> None:
         if self.recorder is None:
             return
-        now_ns = self.get_clock().now().nanoseconds
+        # Capture ordering uses the host monotonic clock; the ROS wall clock is
+        # preserved separately as t_ros_ns and may step (NTP).
+        now_ns = time.monotonic_ns()
         stamp_ns = int(message.header.stamp.sec) * 1_000_000_000 + int(
             message.header.stamp.nanosec
         )
@@ -245,7 +248,7 @@ class TeleopPublisher(Node):
         message.deadman = bool(intent.deadman)
         self.publisher.publish(message)
         self._last_seq = int(seq)
-        self._capture_tick(sample, intent, self.get_clock().now().nanoseconds)
+        self._capture_tick(sample, intent, time.monotonic_ns())
 
     def _neutral_frame(self) -> InputSample:
         return InputSample(
@@ -295,7 +298,7 @@ class TeleopPublisher(Node):
         self.recorder.record_event(
             "SESSION_CLOSED",
             Severity.INFO,
-            self.get_clock().now().nanoseconds,
+            time.monotonic_ns(),
             detail={"reason": "node_close", "state_errors": self._state_errors},
         )
         summary = self.recorder.close(outcome="unknown", outcome_source="automatic")

@@ -9,7 +9,7 @@ observer and is byte-identical to M1.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable
 
@@ -52,6 +52,7 @@ class TeleopRunner:
             submitted=False,
             gateway_result=None,
             stop_sent=stop_sent,
+            stop_intent=self.session.last_stop_intent,
         )
         self.results.append(result)
         if self.on_tick is not None:
@@ -74,6 +75,9 @@ class TeleopRunner:
                 if sample is not None:
                     self.session.on_sample(sample)
                 result = self.session.tick(now)
+                if result.stop_intent is None and self.session.last_stop_intent is not None:
+                    # Expose the stop intent sent by the session on this tick.
+                    result = replace(result, stop_intent=self.session.last_stop_intent)
                 self.results.append(result)
                 if self.on_tick is not None:
                     self.on_tick(result)

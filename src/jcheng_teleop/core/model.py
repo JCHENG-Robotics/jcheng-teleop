@@ -411,6 +411,10 @@ class TickResult:
     submitted: bool
     gateway_result: GatewayResult | None
     stop_sent: bool
+    # The mode-specific stop intent sent on this tick, if any. It is not part
+    # of `to_dict()` (trace compatibility); the capture recorder reads it so a
+    # stop is auditable instead of being inferred from an event code.
+    stop_intent: ActionIntent | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {

@@ -8,6 +8,27 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M4 offline replay in `src/jcheng_teleop/replay/`: verified capture reader,
+  input replay against a fresh conditioner/mapper, a pure anomaly scan, and
+  the `jcheng-teleop-replay` CLI (exit 0 clean, 1 divergence/anomaly, 2
+  verification/profile mismatch). The package imports no rclpy, gateway,
+  socket or subprocess module. `tests/test_replay.py` (10 tests) and
+  `evidence/20261126_m4_replay/`.
+- `TickResult.stop_intent`: the session exposes the mode-specific stop intent
+  it sends, so a capture records the stop as an `action` row instead of only
+  an event code.
+
+### Fixed
+
+- Capture writer ordering: priority rows no longer jump ahead of earlier rows
+  (one FIFO queue; `priority` only decides who is dropped under pressure). The
+  first replay exposed this as `tick_id regressed` in `action.jsonl`.
+- ROS harness capture timestamps use the host monotonic clock; the ROS wall
+  clock is kept as `t_ros_ns`. The first mock capture showed a wall-clock
+  regression in `observation.jsonl`.
+
+### Added (M3)
+
 - M3 capture core in `src/jcheng_teleop/capture/`: `jcheng.teleop.capture.v1`
   provenance metadata and validation, an append-only non-blocking JSONL writer
   with a bounded queue and priority rows, an `EpisodeRecorder` for the

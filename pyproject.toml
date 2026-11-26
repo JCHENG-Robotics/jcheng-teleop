@@ -14,6 +14,7 @@ test = ["pytest>=7.4"]
 
 [project.scripts]
 jcheng-teleop = "jcheng_teleop.cli:main"
+jcheng-teleop-replay = "jcheng_teleop.replay.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

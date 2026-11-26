@@ -79,6 +79,7 @@ class TeleopSession:
         self.last_sample: InputSample | None = None
         self.last_conditioned = None
         self.last_intent: ActionIntent | None = None
+        self.last_stop_intent: ActionIntent | None = None
         self._conditioned_seq: int | None = None
         self._conditioned_source_ns: int | None = None
         self._wire_seq = 0
@@ -210,6 +211,7 @@ class TeleopSession:
 
     def tick(self, now_ns: int | None = None) -> TickResult:
         now = self.clock.now_ns() if now_ns is None else int(now_ns)
+        self.last_stop_intent = None
         events = list(self._pending_events)
         self._pending_events.clear()
         previous_tick = self._last_tick_ns
@@ -393,6 +395,7 @@ class TeleopSession:
                 t_source_ns=(self.last_sample.t_source_ns if self.last_sample is not None else now),
             )
             if stop_intent is not None:
+                self.last_stop_intent = stop_intent
                 try:
                     result = self.gateway.submit(stop_intent)
                     stop_sent = result.outcome == "COMPLETED"

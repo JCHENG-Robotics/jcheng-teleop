@@ -197,6 +197,8 @@ class EpisodeRecorder:
             self.record_input(sample, now_ns, tick_id=tick)
         if result.intent is not None:
             self.record_action(result.intent, now_ns, tick_id=tick)
+        if result.stop_intent is not None:
+            self.record_action(result.stop_intent, now_ns, tick_id=tick)
         if result.gateway_result is not None:
             self.writer.record(
                 "command",
