@@ -8,6 +8,14 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M9 offline interface: `jcheng.teleop.base_intent.v1` and an offline guard
+  (`core/base.py`) for bounded base intent — forward 0.25 m/s, lateral
+  0.20 m/s, yaw 0.60 rad/s, 500 ms input age, 20 Hz, lease/deadman/sequence.
+  `docs/M9_PLAN.md` records the mobile-owns-`/cmd_vel` authority model, the
+  proposed base-intent contract, Nav2 mode arbitration and the three stop
+  paths. Teleop publishes zero `/cmd_vel`; no contract, simulation task or
+  hardware base motion. `tests/test_base_intent.py` (14 tests);
+  `evidence/20261126_m9_design/`.
 - M2 closeout record (`docs/M2_CLOSEOUT.md`): the test-only ROS publisher is
   not claimed as a capability runtime; `capability.yaml` stays `offline` with
   an empty runtime until the `intent_source` class proposal is approved. The
