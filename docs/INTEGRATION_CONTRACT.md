@@ -27,7 +27,7 @@ The audit did not modify any repository. The only writes are in
 | Peer | Version | Current fact | Teleop dependency |
 |---|---|---|---|
 | `jcheng-interfaces` | 0.1.0, tag `33f1293`, hash `sha256:0b8d72…24b42` | `TeleopCommand.msg` reserved; no dataset/episode schema; no teleop error codes | Read-only for M1; v0.2 proposal for position/gripper (M2/M6) |
-| `jcheng-system` | `0.3.0-dev0` | No teleop consumer; gateway is discrete; arbiter is one-active; vendor executor is single-joint step | M2/M6 prerequisite |
+| `jcheng-system` | `0.3.0-dev0` | Mock system-core `TeleopIntake` landed on branch `feat/teleop-intake`; no ROS subscriber/gateway integration yet; vendor executor still single-joint step | M2 ROS/sim bridge and M6 prerequisite |
 | `jcheng-simulation` | 0.1.0 | Domain 43; mock `JointState` or Gazebo JTC; no system bridge | M2 test bridge |
 | `jcheng-learning` | 0.1.0 committed; 0.2.0 only in the working tree | `jcheng.dataset.v1` and a writer are untracked; not merged or frozen | M3/M4 contract freeze and merge |
 | `jcheng-studio` | 0.7.0 | Gateway `/v1` client and `/v1/ws/state`; no teleop UI | M5 status/stop surface |
@@ -410,7 +410,7 @@ Links:
 | ID | Blocker | Impact | Resolution |
 |---|---|---|---|
 | B0 | `.github` teleop admission is on an unmerged branch; `origin/main` still says "planned" | Governance admission not final | Merge the admission branch before M1 |
-| B1 | No system teleop consumer | M2 canonical path impossible | Accept/implement S-M2 |
+| B1 | No ROS system teleop consumer yet; the mock system-core `TeleopIntake` exists only on `feat/teleop-intake` | M2 canonical path still incomplete | Merge/implement the ROS subscriber and sim bridge |
 | B2 | Vendor executor is single-joint step at ~5/s | M6 hardware streaming impossible | New privileged servo/executor design |
 | B3 | `TeleopCommand` lacks position/gripper/session/provenance | Leader-follower and dataset actions blocked | P-001 |
 | B4 | `robot-profile.v1` cannot express CAN/prismatic arms; PiPER X proposal untracked | Multi-robot profile blocked | P-003 |
