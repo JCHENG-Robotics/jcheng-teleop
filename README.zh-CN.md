@@ -57,7 +57,8 @@ jcheng-teleop/
 │   └── proposals/                  # 契约优先提案；未修改任何接口
 ├── src/jcheng_teleop/              # ROS-free 核心、适配器、CLI
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 意图发布节点
-├── examples/armpi_ultra_demo/      # 演示 profile 与 binding
+├── examples/armpi_ultra_demo/      # ArmPi 演示 profile 与 binding
+├── examples/gate2_arm_demo/        # Gate-2 演示 profile 与 binding
 ├── tests/                          # 单元、进程内 L2 与静态边界测试
 ├── scripts/check_repo_gate.sh      # 仓库门禁（本地与 CI）
 ├── evidence/                       # L0/L1/L2 证据记录

@@ -67,7 +67,8 @@ jcheng-teleop/
 │   └── proposals/                  # contract-first proposals; no interface is changed
 ├── src/jcheng_teleop/              # ROS-free core, adapters, CLI
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 intent publisher
-├── examples/armpi_ultra_demo/      # demo profile + binding
+├── examples/armpi_ultra_demo/      # ArmPi demo profile + binding
+├── examples/gate2_arm_demo/        # Gate-2 demo profile + binding
 ├── tests/                          # unit, in-process L2 and static boundary tests
 ├── scripts/check_repo_gate.sh      # repository gate (local and CI)
 ├── evidence/                       # L0/L1/L2 evidence records
