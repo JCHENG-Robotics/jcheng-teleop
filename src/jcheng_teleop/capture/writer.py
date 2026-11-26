@@ -244,7 +244,9 @@ class CaptureWriter:
                 if "recorder_fault" not in flags:
                     flags.append("recorder_fault")
                 limitations = manifest["capture"].setdefault("limitations", [])
-                limitations.append(f"recorder fault: {self._fault}")
+                message = f"recorder fault: {self._fault}"
+                if message not in limitations:
+                    limitations.append(message)
             manifest_path = self.path / "manifest.json"
             manifest_path.write_text(
                 json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"

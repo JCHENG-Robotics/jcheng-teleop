@@ -1,9 +1,10 @@
 # M3 capture core and observation rows (slices 1–2)
 
 > Status: **Partially verified (L1/L2 mock + simulation, 2026-11-26)**. No
-> hardware. 30-episode acceptance and the disk-full drill are **not** met.
-> This record covers the recorder core, provenance gate, seal/verify, labelled
-> observation rows and the ROS demo harness capture.
+> hardware. The mock 30 × 60 s acceptance and the storage-fault drill are met;
+> a simulation/hardware episode set and media are not. This record covers the
+> recorder core, provenance gate, seal/verify, labelled observation rows, the
+> ROS demo harness capture and the drills.
 
 ## Implemented
 
@@ -97,6 +98,20 @@ and the simulator identity, so the rows cannot be mistaken for hardware. The
 label gate was also exercised negatively in tests: a `bus` row in a mock or
 simulation capture is dropped and an `OBSERVATION_REJECTED` event is written.
 
+## Acceptance drills
+
+See [`drills.txt`](drills.txt) for the generated runs.
+
+| Drill | Result |
+|---|---|
+| 30 × 60 s mock captures | 30/30 `valid`, 270,060 rows, 0 label violations, 0 quality flags |
+| Storage failure (`RLIMIT_FSIZE` / EFBIG) | Recorder faults; session stops with a stop intent; capture sealed with `recorder_fault`; no tick blocked (max observer interval 1.8 ms) |
+
+The acceptance drill uses `queue_limit=65536` because it produces rows faster
+than real time. With the default 4096 buffer the same run drops rows and every
+episode is `degraded` by design; at a live 50 Hz producer the default is a
+~40 s buffer.
+
 ## Limits
 
 - The mock CLI still records no observation rows; only the ROS harness does.
@@ -106,7 +121,7 @@ simulation capture is dropped and an `OBSERVATION_REJECTED` event is written.
 - The CLI still does not record the session-close event; the ROS harness does.
 - The mock capture was taken while the system was disarmed, so its observation
   positions are zero; it proves labels and plumbing, not tracking.
+- The 30-episode set is mock/scripted. A simulation or hardware episode set
+  with observations and cross-stream time sync is still open.
 - Manifest policy/checkpoint/lease-reference fields are `null` where the mock
   path has no value; they are placeholders, not measurements.
-- 30 episodes × 60 s valid-capture acceptance and a disk-full session-stop
-  drill are still open.

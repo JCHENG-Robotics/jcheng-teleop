@@ -24,7 +24,8 @@
 | Hardware capture session | Not implemented; requires an authorized session, a system profile and a bus measurement |
 | Simulation capture session | Implemented as the ROS demo harness against `jcheng_runtime` + the domain-43 bridge; scripted input only |
 | Session-close event | Implemented in the ROS harness (`SESSION_CLOSED`) |
-| 30 × 60 s valid capture, disk-full drill | Not met |
+| 30 × 60 s valid capture | Met at the mock level: 30/30 `valid`, 270,060 rows, 0 label violations (`tools/capture_acceptance_drill.py`; `evidence/20261126_m3_capture/drills.txt`). A simulation/hardware episode set is still open |
+| Disk-full / storage-fault drill | Met: a write failure (EFBIG) marks the recorder faulted, the session stops with a stop intent, and the sealed capture is labelled `recorder_fault`; the faulted package may be unreadable and is retained, not exported |
 
 ## 1. Ownership boundary
 

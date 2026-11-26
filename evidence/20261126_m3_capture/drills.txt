@@ -1,0 +1,68 @@
+# M3 capture drills
+
+> 2026-11-26. Generated evidence; keeps no capture data in the repository.
+> The 30 capture packages were written under `/tmp` and deleted after the
+> drill. Re-run the two tools to reproduce.
+
+## 1. Storage-failure drill
+
+`PYTHONPATH=src python3 tools/disk_full_drill.py`
+
+`RLIMIT_FSIZE` is lowered to 512 bytes with `SIGXFSZ` ignored, so writes fail
+with EFBIG (the same error path as a full disk). The drill requires the
+recorder to fault, the session to stop and the capture to be sealed with a
+fault label. A storage fault can truncate the row being written, so the package
+may verify `invalid`; it is retained for diagnosis and is not exportable.
+
+```json
+{"capture": "/tmp/jcheng-disk-drill-6576vzuo/disk-drill", "elapsed_s": 0.021, "fault": "OSError: [Errno 27] File too large", "faulted": true, "manifest_sha256": "sha256:e8504a832ae9c9f31860f6c62058708b5089b2db9285abab2f64dc2744451d97", "max_observer_interval_ms": 1.626, "observer_errors": 0, "session_state": "FAULT", "stop_sent": true, "ticks_run": 316, "verify": "invalid", "verify_errors": ["command.jsonl:1: invalid JSON: Unterminated string starting at: line 1 column 505 (char 504)"], "warnings": []}
+```
+
+## 2. 30 x 60 s acceptance drill
+
+`PYTHONPATH=src python3 tools/capture_acceptance_drill.py --episodes 30 --seconds 60 --root /tmp/jcheng-m3-acceptance-20261126 --keep`
+
+```json
+{"elapsed_s": 10.767, "episodes": 30, "last": {"capture_id": "ep-29-mock", "manifest_sha256": "sha256:f4e7005b3d8c8def18d3d6d9ca60534712ff70c3f878797f2376bb82576ef1b6", "quality_flags": [], "rows": 9002, "state": "IDLE", "ticks": 3000, "verify": "valid"}, "rate_hz": 50.0, "root": "/tmp/jcheng-m3-acceptance-20261126", "sample": {"capture_id": "ep-00-mock", "manifest_sha256": "sha256:af4d8d04d61114eba4c86fbb293ad826c846425a0675f250763ef8b7b40a6d4e", "quality_flags": [], "rows": 9002, "state": "IDLE", "ticks": 3000, "verify": "valid"}, "seconds_per_episode": 60.0, "ticks_per_episode": 3000, "total_bytes": 151979785, "total_rows": 270060, "violations": 0}
+```
+
+The drill uses `queue_limit=65536`: it produces rows faster than real time, and
+the default 4096 buffer is sized for a 50 Hz live producer. With the default
+queue the same run dropped rows and every episode was `degraded`; that is the
+intended bounded-memory behaviour, not a valid acceptance run.
+
+Per-episode manifests (30/30 `valid`, no quality flags, no `bus`/`measured`
+label in any stream):
+
+```text
+ep-00-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:af4d8d04d61114eba4c86fbb293ad826c846425a0675f250763ef8b7b40a6d4e
+ep-01-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:26cad10318049e857ae15a954803428bc2a65828f4f38873cc4c111cc0234ed2
+ep-02-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:ef86914b69317110a88666330721d5236e45ab040a07ab973b88ab1b59a47a43
+ep-03-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:6e8c0a6b4b62b5fb437874f46ca883dc069038f582c9210c0e16c4da35f5c83c
+ep-04-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:e61086cde0d2c33d2eaab2ddf82fed2f5868699a539cdd830a2d76bca363260c
+ep-05-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:049fc340baea730dd05b8c200438570ce72b41ca943ff791abe50b3105874d7f
+ep-06-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:9058b99325e8d933b6ab2e6f056e60fdad5db898daabed94fadbf80bb8a00ede
+ep-07-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:a844d004da197b04877c6b68c157c03e9fe29019ccad39088be44b74b98a6dd9
+ep-08-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:8da5e6b8470a60725da24be19446d9530c9d385e6de619b82ca7c53d2d0baafe
+ep-09-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:2ccc55dbb4270927ce91c2cc20c338fa9f8c87436bb06806a595a0233e7905bf
+ep-10-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:1e179f4727ef2bff831edddedd93c56cc87bb68635df447caa8a324f0bacd205
+ep-11-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:9fa1da491659bdd73d32a2d9df4c46ced0322d47bc4980ec675d74ecfb43d989
+ep-12-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:49233cde8cfab904b2462248d24b523a1c71141ee9a42dd48cf8376582a15439
+ep-13-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:65a1ac8d97c68d2f7efaf70c203f9dc5d13d8b55f090f51e9e91974f32983783
+ep-14-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:3909fa5aaf7cdc81d55416de7378aadc8e29bb3cab84a3e662bc58c4c470a806
+ep-15-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:785b5149ea38b005918577ac2ff7b75c1f6d699afd6a14f417c144d604aca04b
+ep-16-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:f2f5c28bdebbd56ed8288d9bc90c918fbef0c2d94928aec86557e08cae9ed0cd
+ep-17-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:404c098ba5b88b230f163d308214768a3f3d08ebbe5dd1a6be5c8e5836f2b802
+ep-18-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:b1ad24da3adcbed2f4b93c7508c28d8fbeaead434dc100c098a2acdff7120cf2
+ep-19-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:ac277c0fe88a3c79e92f5ed63b095e18727df62b7e66f6b68b8eca038a4a5955
+ep-20-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:619419af69d4897e23758215bd26ebdcf834be4068f9fdb1fb1e5d4a33d5ba54
+ep-21-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:e8fc39656e4bd3c06310bee59a57a1cf2e89c4433c5ef01a0c437baa8d171c75
+ep-22-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:3ecda31a57e50ebdd64f747e64d2dad6631bfe77814e115d4f5643a4950f69bd
+ep-23-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:c37df4a539add0200a41314fde89a89404d9264a223a36f8e9d9e32ca9ce4b82
+ep-24-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:7f7a72028f019b48da45dbb7ebcca36d015617ea448a79c11528cec5bed6f553
+ep-25-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:d4fb2a520b0091598017aada4b53b2a1961cd7083462dd49be1c0a27343eaedc
+ep-26-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:78492240ae375473f152a9522435449f748da89319272f20ca8f7395855bb6de
+ep-27-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:fc3a6183abbc93ad05065aebc93205f0de29202d5f3ee610dba5964019202e61
+ep-28-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:ff1e816996a2ef720a7628128c076991adb95e61d1f62987b44be92797dd92b0
+ep-29-mock  rows=9002  input=3000,action=2997,command=2997,events=8  flags=[]  manifest_sha256=sha256:f4e7005b3d8c8def18d3d6d9ca60534712ff70c3f878797f2376bb82576ef1b6
+```

@@ -31,6 +31,13 @@ All notable changes to this project are documented here. Format based on
   stops the script.
 - Integration evidence: mock capture 252 observation rows (`commanded`/`timed`);
   simulation capture 188 rows (`measured`/`simulated`), joint1 0 -> 0.1361 rad.
+- `tools/capture_acceptance_drill.py`: 30 × 60 s mock captures, each sealed and
+  re-read; 30/30 `valid`, 270,060 rows, 0 label violations.
+- `tools/disk_full_drill.py`: `RLIMIT_FSIZE` storage-failure drill; the
+  recorder faults on EFBIG, the session stops with a stop intent, and the
+  sealed capture carries `recorder_fault`. The faulted package may be
+  unreadable and is retained, not exported. Evidence:
+  `evidence/20261126_m3_capture/drills.txt`.
 
 - M2 ROS 2 publisher `ros2_ws/src/jcheng_teleop_ros` and its Humble build
   evidence. The publisher takes an operator-supplied lease id and never mints
