@@ -1,9 +1,31 @@
 # Data collection and provenance — jcheng-teleop
 
-> Status: **Proposed** as of 2026-11-26; to be frozen at M3.
-> No recorder exists. No capture, dataset or model weight is stored in this
-> repository. The learning dataset contract is owned by `jcheng-learning` and
-> is not yet frozen; this document records the negotiation boundary.
+> Status: **Partially implemented (M3 slice 2)** as of 2026-11-26.
+> `src/jcheng_teleop/capture/` implements the capture package, provenance gate,
+> non-blocking writer and seal/verify. The mock CLI records
+> input/action/command/event rows; the ROS demo harness additionally records
+> observed state copied from `/jcheng/telemetry/state`. Media, hardware
+> sessions and the 30-episode acceptance remain open. No capture, dataset or
+> model weight is stored in this repository. The learning dataset contract is
+> owned by `jcheng-learning` and is not yet frozen; this document records the
+> negotiation boundary.
+
+### Implementation status (2026-11-26)
+
+| Area | State |
+|---|---|
+| `jcheng.teleop.capture.v1` manifest + five JSONL streams | Implemented for all five; `observation` rows come from the system telemetry tap (ROS harness), and stay an empty file on the mock CLI path |
+| Provenance gate (environment/source/authorization/truth label) | Implemented; `replay` is rejected as a new capture |
+| Observation label gate | Implemented: `bus` is only accepted in a hardware capture; `simulated` only in a simulation capture with a truth label; vectors must match |
+| Non-blocking writer, bounded queue, drop order | Implemented; stop intent, gateway results, rejected observations and fault events are priority rows |
+| Seal (`manifest.json`, `SHA256SUMS`) and re-read verification | Implemented; tamper detection covered by tests |
+| Recorder fault handling | Storage error marks the capture faulted; the runner stops the session with `recorder_fault`; the ROS harness sends a neutral frame and stops |
+| Media, camera references, `README.txt` | Not implemented |
+| Hardware capture session | Not implemented; requires an authorized session, a system profile and a bus measurement |
+| Simulation capture session | Implemented as the ROS demo harness against `jcheng_runtime` + the domain-43 bridge; scripted input only |
+| Session-close event | Implemented in the ROS harness (`SESSION_CLOSED`) |
+| 30 × 60 s valid capture | Met at the mock level: 30/30 `valid`, 270,060 rows, 0 label violations (`tools/capture_acceptance_drill.py`; `evidence/20261126_m3_capture/drills.txt`). A simulation/hardware episode set is still open |
+| Disk-full / storage-fault drill | Met: a write failure (EFBIG) marks the recorder faulted, the session stops with a stop intent, and the sealed capture is labelled `recorder_fault`; the faulted package may be unreadable and is retained, not exported |
 
 ## 1. Ownership boundary
 
@@ -126,23 +148,33 @@ and applied values after clamping, and the limit events.
 ### 4.3 `command.jsonl`
 
 The wire command actually sent (or the transport error), the lease reference
-(hashed, not the raw id), the gateway result and the latency. When the system
-reports an applied target or a measured post-state, it is recorded as
+(hashed, not the raw id), the gateway result and the submitted `payload`
+(mode, purpose, seq, deadman, vectors, gripper, profile hashes). When the
+system reports an applied target or a measured post-state, it is recorded as
 `applied` with the system's `truth`/`verification` label; teleop never invents
-an applied value. It never records a token or raw credential.
+an applied value. It never records a token or raw credential. Latency is not
+recorded yet.
 
 ### 4.4 `observation.jsonl`
 
-Separate rows for:
+Rows are copied from `/jcheng/telemetry/state`; the recorder never reinterprets
+`truth` or `verification`. Implemented labels:
 
-- `truth: measured`, `verification: bus` — a bus read (hardware);
-- `truth: commanded` — a command cache such as `/joint_states`; labelled as
-  not measurement;
-- `truth: simulated`, `verification: simulator` — simulation state, with the
-  truth topic label.
+- `truth: measured`, `verification: bus` — a bus read (hardware only);
+- `truth: commanded`, `verification: timed` — a command cache or a mock
+  fixture; never a measurement;
+- `truth: measured` (or `simulated`), `verification: simulated` — a
+  simulation state, accepted only in a `simulation` capture with a truth label.
 
-The three are never merged into one "state" field. A training dataset that
-claims `bus_read` must be backed by `measurements` rows.
+The label gate rejects `bus` outside a hardware capture and `simulated` outside
+a simulation capture, and records an `OBSERVATION_REJECTED` event. The three
+kinds are never merged into one "state" field. A training dataset that claims
+`bus_read` must be backed by `measurements` rows.
+
+Implemented row fields: `topic`, `source`, `seq`, `fresh`, `joint_names`,
+`positions`, `velocities`, `gripper_position`, `base_duty`, `battery_voltage`,
+`profile_hash`, `truth`, `verification`, `t_ros_ns`, `t_received_ns`,
+`environment_class`. A camera row is not implemented.
 
 ### 4.5 `events.jsonl`
 
@@ -228,6 +260,13 @@ Quality metrics for evaluation (not a safety certification):
 
 ## 8. Dataset adapter and LeRobot mapping
 
+M7 adds a **teleop-local mixed-source index** (`jcheng.teleop.dataset.v1`,
+`export/mixed.py`) and correction provenance
+(`corrected_from_capture_id`/`corrected_from_tick_id`/`policy_action_seq`). The
+index verifies sealed captures, keeps per-episode environment/source labels,
+groups by source class and resolves correction references; it is not the
+learning dataset and never writes one. See [M7_PLAN.md](M7_PLAN.md).
+
 The learning-owned proposal is `jcheng.dataset.v1` with
 `action.kind: joint_position_absolute` in its M1 scope. The current
 `TeleopCommand` v0.1 wire carries velocity only and has no gripper field, so a
@@ -272,17 +311,28 @@ LeRobot v3.0 export:
 Replay is offline and has no gateway port. It uses the same core with a fake
 clock, so a replay cannot accidentally connect to a live system.
 
-| Mode | Input | What is compared |
-|---|---|---|
-| Input replay | `input.jsonl` | Recorded action intent vs re-derived action intent |
-| Command replay | Recorded action intent | Recorded wire command vs re-derived wire command |
-| Episode replay | All rows | Timing, events, limits, stop path and provenance |
+| Mode | Input | What is compared | State |
+|---|---|---|---|
+| Input replay | `input.jsonl` | Recorded action intent vs re-derived action intent (fresh conditioner + mapper) | Implemented (`jcheng_teleop/replay/`) |
+| Command replay | Recorded `command.payload` | Wire projection: recorded payload vs its action row; seq/lease are session-assigned and are format-checked only | Implemented; no gateway is re-run |
+| Episode replay | All rows | Timing, events, limits, stop path and provenance | Partially: schema/tick/time/label scan and basic metrics implemented; limit/stop-latency bounds are not |
+| Benchmark export | Motion actions | One row per action with `sample_id`, `speed_rad_s`, `deadman`, `limit_event`, `zero_command` | Implemented (`jcheng_teleop/export/benchmark.py`); `data_source` maps hardware→`recorded`, simulation→`synthetic`, mock→`mock` |
+| LeRobot v3 export | Capture + learning contract | Dataset round-trip | Blocked on `jcheng.dataset.v1` and the absolute-position action gap |
 
-Anomaly codes include: non-monotonic time, sequence gap, missing tick, action
-divergence above the declared epsilon, unexpected limit clamp, deadman edge
-mismatch, lease/gateway state mismatch, missing measurement row, provenance
-mismatch and data-hash mismatch. A divergence is a finding, not a reason to
-edit the recording.
+`jcheng-teleop-replay` exits 0 on a clean replay, 1 on a divergence or anomaly
+error, and 2 on a verification or profile-hash mismatch. A capture that fails
+seal verification is never replayed.
+
+Anomaly codes implemented: unexpected schema, duplicate/regressed `tick_id`,
+non-monotonic `t_mono_ns`, stop intent with `deadman=true`, non-finite action
+values, command without an action at the same tick, `bus` label outside a
+hardware capture, `simulated` label outside a simulation capture, and a tick
+gap over 50. A divergence is a finding, not a reason to edit the recording.
+
+Two fixes came out of the first replay: priority rows must not reorder a
+stream (the writer is FIFO; priority only decides drop order), and the session
+must expose the stop intent it sends (`TickResult.stop_intent`) so a stop is
+auditable as an `action` row.
 
 The replay report is an evaluation artifact. It never rewrites the capture and
 is never reported as a new demonstration or as hardware evidence.

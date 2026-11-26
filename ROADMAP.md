@@ -1,25 +1,35 @@
 # jcheng-teleop roadmap
 
 > Status: **v0.3.0** as of 2026-11-26. M0 design is approved. The M1 ROS-free
-> core and CLI are accepted at L1/in-process L2. M2 is In progress; it depends
-> on the system teleop intake and simulation bridge. No DDS/device/hardware
-> path exists in this repository yet. The full M0–M9 path is recorded here so that later
-> milestones are not redesigned around today's mock-only system.
+> core and CLI are accepted at L1/in-process L2. M2 is In progress; the system
+> teleop intake, ROS runtime subscriber, teleop ROS publisher and test-only
+> simulation bridge exist. M3 has started: the capture core (provenance,
+> non-blocking writer, seal/verify) records mock CLI runs, and the ROS harness
+> records labelled observation rows from the system telemetry tap. M4 has
+> input replay, command replay, metrics and benchmark export. M5 has the
+> read-only status API; the studio panel and system stop proxy are on the
+> studio side. M6 is In progress at the offline authorization/preflight stage;
+> hardware streaming and stop confirmation are still missing. M7 has the
+> offline data side: correction provenance and a mixed-source index; training,
+> rollout and evaluation are blocked. No
+> device or hardware path exists in this repository. The full M0–M9 path is
+> recorded here so that later milestones are not redesigned around today's
+> mock-only system.
 
 ## Current state
 
 | Item | State | Evidence |
 |---|---|---|
-| Repository admission (`capability.yaml`, L3) | Complete (2026-11-26); the `.github` taxonomy merge is pending (B0) | `capability.yaml`; `tests/test_contract.py` |
+| Repository admission (`capability.yaml`, L3) | Complete (2026-11-26); `.github` taxonomy updated to v0.3.0; the `intent_source` class (P-006) is proposed, not approved | `capability.yaml`; `tests/test_contract.py`; [docs/M2_CLOSEOUT.md](docs/M2_CLOSEOUT.md) |
 | M0 ecosystem audit, architecture, contract proposals | Complete (delivery/approved, 2026-11-26); Round 2 APPROVE WITH CHANGES; operator approved | `evidence/20261126_m0_design/`; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Research and dependency review | Complete (2026-11-26) | [docs/DEPENDENCY_REVIEW.md](docs/DEPENDENCY_REVIEW.md) |
 | ROS-free teleop core, virtual/keyboard/JSONL/gamepad mapping, CLI | Complete (2026-11-26); L1/in-process L2 accepted | `evidence/20261126_m1_core/`; `tests/` |
-| System teleoperation intake and simulation teleoperation | In progress (M2); system intake/ROS subscriber landed on `jcheng-system` branch `feat/teleop-intake`; teleop ROS publisher landed in this repo; sim bridge and L3 evidence pending | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
-| Episode capture, provenance and time sync | Planned (M3) | — |
-| Offline replay, quality evaluation and LeRobot export | Planned (M4) | — |
-| Studio teleoperation panel | Planned (M5) | — |
-| Leader-arm and supervised hardware teleoperation | Planned (M6; system servo path required) | — |
-| Hybrid demonstration/policy data and SmolVLA loop | Planned (M7) | — |
+| System teleoperation intake and simulation teleoperation | In progress (M2); system intake/ROS subscriber merged; teleop publisher + L3 (domain 42 + 43 bridge) on `docs/m0-architecture`; the publisher is test-only, so the manifest stays `offline` until `intent_source` is approved. Production lease adapter and `TeleopState` missing | `docs/M2_CLOSEOUT.md`; `jcheng-system` `tests/test_teleop.py` |
+| Episode capture, provenance and time sync | In progress (M3): capture core, provenance gate, non-blocking writer, seal/verify, CLI and ROS-harness recording, labelled observation rows and the session-close event landed. Mock acceptance met: 30 × 60 s valid captures and a storage-fault stop drill. Media, a simulation/hardware episode set and cross-stream time sync remain open | `evidence/20261126_m3_capture/`; `docs/DATA_COLLECTION.md` |
+| Offline replay, quality evaluation and LeRobot export | In progress (M4): input replay, command-payload capture + wire-projection replay, anomalies, basic quality metrics and benchmark JSONL export landed. LeRobot v3 export is blocked on the learning dataset contract and the absolute-position action gap | `evidence/20261126_m4_replay/` |
+| Studio teleoperation panel | Complete in the studio (M5): read-only status API here; studio v0.8.0 panel + opt-in system stop (`evidence/20261126_teleop_panel/`) | [docs/STATUS_API.md](docs/STATUS_API.md) |
+| Leader-arm and supervised hardware teleoperation | In progress (M6, offline prerequisites); `jcheng.teleop.authorization.v1` + `jcheng-teleop-preflight` implemented and tested; hardware blocked by the system streaming executor (B2), wire v0.2 (B3), stop confirmation (B9) and no e-stop | [docs/M6_PLAN.md](docs/M6_PLAN.md); `evidence/20261126_m6_preflight/` |
+| Hybrid demonstration/policy data and SmolVLA loop | In progress (M7, offline data side); correction provenance and a mixed-source index (`jcheng.teleop.dataset.v1`) are implemented; training, policy rollout, takeover and evaluation are blocked on M6 and the learning contract | [docs/M7_PLAN.md](docs/M7_PLAN.md); `evidence/20261126_m7_mixed/` |
 | Shared autonomy and human-in-the-loop correction | Planned (M8) | — |
 | Mobile manipulation teleoperation | Planned (M9) | — |
 
@@ -29,12 +39,12 @@
 |---|---|---|---|---|
 | M0 | Admission, architecture, contract and dependency review, M1 plan | Complete (approved 2026-11-26) | Document set, research record, proposals, gate and review pass; operator approved; commit/tag remains an explicit request | `evidence/20261126_m0_design/` |
 | M1 | ROS-free deterministic core, virtual/keyboard/JSONL/gamepad mapping, profile mapping, safety state machine, in-process mock gateway | Complete (2026-11-26); L1/in-process L2 accepted | 111 tests pass; no DDS, device, recording or hardware | `evidence/20261126_m1_core/` |
-| M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher landed; sim bridge/L3 pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
-| M3 | Episode capture, time synchronization, provenance and quality gate | Planned | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | — |
-| M4 | Offline replay, anomaly detection and LeRobot v3 export | Planned | Byte-identical replay; benchmark scores; LeRobot round-trip equality | — |
-| M5 | Studio teleoperation panel and session UX | Planned | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | — |
-| M6 | Leader-arm and supervised hardware teleoperation | Planned | Authorized L5 session with bus-verified stop and no unattended motion | — |
-| M7 | Hybrid autonomous grasp + human demonstration + SmolVLA loop | Planned | Mixed-source dataset, policy evaluation and human takeover evidence | — |
+| M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher + ArmPi/Gate-2/PiPER X mock L3 on canonical domain 42 + Humble build; PiPER X canonical profile pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
+| M3 | Episode capture, time synchronization, provenance and quality gate | In progress; the recorder, provenance gate, non-blocking writer, seal/verify, observation rows and the mock 30-episode/storage-fault drills are done. Media, a simulation/hardware capture set and action/observation time-sync validation remain | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | `evidence/20261126_m3_capture/`; `docs/DATA_COLLECTION.md` |
+| M4 | Offline replay, anomaly detection and LeRobot v3 export | In progress; input replay, command-payload/wire-projection replay, anomalies, basic metrics and benchmark JSONL export are implemented. LeRobot v3 export is blocked on the learning contract and the absolute-position action gap | Byte-identical replay; benchmark scores; LeRobot round-trip equality | `evidence/20261126_m4_replay/` |
+| M5 | Studio teleoperation panel and session UX | In progress; the read-only status contract and loopback server are implemented; the studio panel, stale-state UX and stop wiring remain | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | [docs/STATUS_API.md](docs/STATUS_API.md) |
+| M6 | Leader-arm and supervised hardware teleoperation | In progress; offline authorization and preflight are implemented. Hardware is blocked: streaming executor, position/gripper wire, stop confirmation, no e-stop, PiPER X canonical profile | Authorized L5 session with bus-verified stop and no unattended motion | [docs/M6_PLAN.md](docs/M6_PLAN.md); `evidence/20261126_m6_preflight/` |
+| M7 | Hybrid autonomous grasp + human demonstration + SmolVLA loop | In progress (offline data side); mixed-source index and correction provenance implemented. Training, rollout under a non-teleop lease, takeover and pre-registered evaluation are blocked | Mixed-source dataset, policy evaluation and human takeover evidence | [docs/M7_PLAN.md](docs/M7_PLAN.md); `evidence/20261126_m7_mixed/` |
 | M8 | Shared autonomy, policy takeover and correction demonstrations | Planned | Authority handover is explicit, bounded and auditable | — |
 | M9 | Mobile manipulation teleoperation and industrial extension | Planned | Coordinated base/arm intent with separate base authority and stop evidence | — |
 

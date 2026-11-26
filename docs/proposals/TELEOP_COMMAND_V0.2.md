@@ -161,7 +161,32 @@ string source_class                  # human_teleop | human_correction | ...
 - Does a future bimanual arm need a joint-group dimension, or one stream per
   arm? One stream per arm is simpler and preserves scopes.
 
-## 8. Related
+## 8. M6 enablement checklist
+
+This proposal is necessary but not sufficient for a supervised hardware
+session. All of the following must be true before one is attempted:
+
+- [ ] v0.2 is approved, tagged and pinned; `interface_manifest.json`, lock
+      files and consumer tests are updated.
+- [ ] `jcheng-system` has a reviewed streaming executor solution
+      ([proposal](https://github.com/JCHENG-Robotics/jcheng-system/blob/main/docs/proposals/STREAMING-EXECUTOR.md)):
+      a privileged multi-joint stream, a reduced single-joint scope, or an
+      explicit vendor-stack block.
+- [ ] The stop result adopts the stop-confirmation levels
+      ([proposal](https://github.com/JCHENG-Robotics/jcheng-interfaces/blob/main/docs/proposals/stop-confirmation-levels.md));
+      an `accepted` boolean alone is not a confirmation.
+- [ ] The supervised authorization and offline preflight pass for the exact
+      session (`jcheng.teleop.authorization.v1`).
+- [ ] Joint order, sign and limits are validated against the session profile;
+      PiPER X needs its own canonical profile proposal.
+- [ ] The operator and supervisor record numeric latency/tracking bounds and
+      whether the stop is `confirmed` or `unknown`.
+- [ ] The plan states that the platform has no e-stop and that a software stop
+      is not an e-stop.
+
+Until then, M6 stays at the offline prerequisite stage.
+
+## 9. Related
 
 - [Integration contract](../INTEGRATION_CONTRACT.md)
 - [Teleop core](../TELEOP_CORE.md)

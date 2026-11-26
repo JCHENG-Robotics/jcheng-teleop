@@ -7,8 +7,9 @@
 > independent design review Round 1 REJECT; Round 2 APPROVE WITH CHANGES, no
 > blockers. M1 code review is recorded separately.
 > Scope: M0 architecture and M1 core. The M1 result is not hardware evidence;
-> M2+ and all robot behavior remain unverified. There is no ROS node, DDS
-> domain, input device, capture or hardware session. No motion command reaches
+> M2+ and all robot behavior remain unverified. M2 has a test-only ROS
+> publisher and simulation L3 (ArmPi, Gate-2, PiPER X mock) but no input
+> device, capture, deployment or hardware session. No motion command reaches
 > a robot.
 > M0 reviewed content: `sha256:f8f6281d4b7e9168cd9d24d4716da668f3928309be821d8e7fe90b6a65f85e6c`
 > on branch `docs/m0-architecture`; no commit or tag was created (operator
@@ -48,7 +49,7 @@ hardware.
 
 | Claim | Level | Evidence |
 |---|---|---|
-| The repository is an L3 capability with `hardware_access: none`, `safety.class: offline` and an empty DDS/runtime surface | L0 | `capability.yaml`; `tests/test_contract.py` |
+| The repository is an L3 capability with `hardware_access: none` and `safety.class: offline`; the manifest keeps an empty runtime because the `ros2_ws/` publisher is test-only and the `intent_source` class is not approved | L0 | `capability.yaml`; `tests/test_contract.py`; [docs/M2_CLOSEOUT.md](docs/M2_CLOSEOUT.md) |
 | The M0 document set, links and full M0–M9 roadmap exist | L0 | gate; `tests/test_contract.py` |
 | The nine module responsibilities, dependencies, interfaces and lifecycles are recorded | L0 | `docs/ARCHITECTURE.md`; `docs/TELEOP_CORE.md` |
 | The ecosystem audit identifies the missing system consumer, discrete motion path and vendor executor limits | L0 | `docs/INTEGRATION_CONTRACT.md`; `docs/proposals/SYSTEM_TELEOP_INTAKE.md` |
@@ -63,19 +64,34 @@ hardware.
 | The mock gateway covers lease, submit, unknown, busy, unavailable and stop; no motion retry | L2 | `tests/test_mock_gateway.py`; `tests/test_session.py` |
 | 2/5/6-DoF profiles run through the same core | L1 | `tests/test_profile.py`; `evidence/20261126_m1_core/profiles.txt` |
 | The same script produces a byte-identical trace | L1/L2 | `tests/test_runner_determinism.py`; `cli_trace_sha256.txt` |
+| Capture provenance is immutable; mock/simulation cannot be relabelled hardware; `replay` is not a new capture | L1 | `tests/test_capture.py`; `docs/DATA_COLLECTION.md` |
+| Observation rows copy `truth`/`verification` and gate `bus`/`simulated` by environment; a rejected row is recorded as an event | L1 | `tests/test_capture.py`; `capture/observation.py` |
+| The recorder cannot block the tick loop or the stop path (bounded queue, observer isolation, stop on recorder fault) | L1/L2 | `tests/test_capture.py`; `core/runner.py` |
+| A sealed capture re-reads with matching hashes; tampering is detected | L1 | `tests/test_capture.py`; `capture/verify.py` |
+| Input replay re-derives recorded actions byte-identically; tampering and missing inputs are findings | L1 | `tests/test_replay.py`; `evidence/20261126_m4_replay/` |
+| A capture with a `bus` label in a non-hardware environment, or non-monotonic time, is an anomaly error | L1 | `tests/test_replay.py`; `replay/anomaly.py` |
+| A benchmark export is one row per motion action with unique ids, and only a hardware capture maps to `data_source: recorded` | L1 | `tests/test_replay.py`; `export/benchmark.py` |
+| A supervised authorization must name different operator/supervisor, a clear workspace, exact profile joint order, a valid scope/velocity, matching profile/contract hashes and an unexpired timezone-aware window | L1 | `tests/test_supervised.py`; `supervised/authorization.py` |
+| Preflight never reports `hardware_ready: true`; it lists the streaming, wire, stop-confirmation, e-stop and profile blockers | L1 | `tests/test_supervised.py`; `supervised/preflight.py` |
+| A correction episode requires policy identity, a prior capture and a policy action sequence; other source classes cannot carry correction fields | L1 | `tests/test_mixed_dataset.py`; `capture/provenance.py` |
+| A mixed-source index keeps per-episode environment/source labels, groups by source class, verifies capture hashes and resolves correction references | L1 | `tests/test_mixed_dataset.py`; `export/mixed.py` |
+| 30 × 60 s mock captures are valid with complete provenance and 0 label violations | L1 | `tools/capture_acceptance_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
+| A storage write failure faults the recorder, sends a stop and stops the session; no tick is blocked | L1 | `tools/disk_full_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | No device, vendor topic, motion call, model weight or recording exists in the tree | L0 | `tests/test_no_hardware.py`; gate |
 
 ## 4. Not verified
 
 | Item | Reason | Risk |
 |---|---|---|
-| ROS 2 Humble node, DDS QoS and lease handshake | Not implemented (M2) | No deployed intent path |
-| System teleoperation intake and streaming session | Proposal only | M2 canonical path is blocked |
-| Simulation bridge and multi-robot teleoperation | Not implemented | M2 simulation path is blocked |
+| ROS 2 Humble node, DDS QoS and lease handshake | Publisher and Humble build exist (M2); no lease handshake from teleop, no deployment | No deployed intent path |
+| System teleoperation intake and streaming session | Intake + ROS subscriber merged for mock only; `TeleopState` absent | No production consumer |
+| Simulation bridge and multi-robot teleoperation | Test-only bridge; ArmPi, Gate-2 and PiPER X mock L3 proven on domain 42 + 43 | No hardware or canonical PiPER X profile |
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
-| Episode capture, replay, quality and LeRobot export | Not implemented (M3–M4) | No demonstration data |
-| Studio teleoperation panel | Not implemented (M5) | Operator cannot observe a live session |
-| Leader-arm and hardware teleoperation | Not implemented (M6); vendor executor cannot stream multi-joint | No hardware claim; no e-stop |
+| Episode capture | Capture core implemented (M3): provenance gate, non-blocking writer, seal/verify, 26 tests, mock CLI recording, ROS-harness observation rows from the system telemetry tap, a 30 × 60 s mock acceptance set and a storage-fault drill; media, a simulation/hardware episode set and cross-stream time sync open | No demonstration dataset yet |
+| Offline replay | Input replay + command wire-projection replay implemented (M4): recorded mock/simulation captures replay with 0 divergences; anomaly scan, basic quality metrics and benchmark JSONL export landed. LeRobot export blocked on the learning contract | No export dataset yet |
+| Studio teleoperation panel | Read-only status API implemented (M5): `jcheng.teleop.status.v1` over loopback with staleness/degraded semantics, profile/contract/lease-ref and capture counters. The studio panel + opt-in system stop are in `jcheng-studio` (`evidence/20261126_teleop_panel/`) | Panel browser E2E not run |
+| Leader-arm and hardware teleoperation | Offline M6 prerequisites implemented: `jcheng.teleop.authorization.v1` and `jcheng-teleop-preflight` validate a per-session authorization against profile/contract and report blockers. Hardware blocked: vendor executor cannot stream multi-joint, wire v0.2 missing, stop confirmation missing | No hardware claim; no e-stop |
+| Hybrid demonstration/policy data | Offline M7 data side implemented: correction provenance and a mixed-source index that keeps per-episode labels. Training, policy rollout, takeover and evaluation blocked | No policy, no training, no multi-source episode set |
 | Independent M1 code review | Round 1 REJECT; Round 2 APPROVE WITH CHANGES; final re-review pending | M1 acceptance is not final |
 | Hardware behavior | No authorization, no session | No L5 evidence |
 
@@ -92,8 +108,11 @@ hardware.
 - The 50 Hz / 300 ms values are local design bounds; they are not a physical
   stop guarantee. The platform has no e-stop, brake, encoder or self-collision
   model.
-- The system has no teleoperation consumer; publishing `TeleopCommand` today
-  would be inert. M2 is a cross-repository proposal.
+- The system has a mock-only teleop intake and a test-only simulation bridge;
+  there is no production consumer, no gateway lease adapter and no
+  `TeleopState`. M2 is a cross-repository effort.
+- PiPER X is simulation-only: `robot-profile.v1` cannot express a CAN arm and
+  no CAN read has established whether vendor feedback is a measurement.
 - The vendor executor accepts one-joint `JOINT_STEP` at about 5 commands/s;
   M6 hardware streaming is blocked.
 - `jcheng.dataset.v1` and its writer are an untracked learning working tree,

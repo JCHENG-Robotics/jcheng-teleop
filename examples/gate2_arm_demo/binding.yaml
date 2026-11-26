@@ -1,0 +1,8 @@
+schema: jcheng.teleop.binding.v1
+profile_id: gate2_arm_demo
+profile_hash: "sha256:141d5e341f9cdf265fc67cfa8500180de62a37e00a14031bd7bfe3cb5f6e22ed"
+source_id: gate2_demo
+joints:
+  - {input: 0, joint: joint1, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+  - {input: 1, joint: joint2, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+modes: [JOINT_VELOCITY]

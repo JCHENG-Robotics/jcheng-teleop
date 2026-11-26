@@ -1,0 +1,8 @@
+schema: jcheng.teleop.profile.v1
+profile_id: gate2_arm_demo
+joints:
+  - {name: joint1, lower_rad: -3.14159, upper_rad: 3.14159, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+  - {name: joint2, lower_rad: -3.14159, upper_rad: 3.14159, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+workspace_frame: base_link
+tip_link: tool0
+modes: [JOINT_VELOCITY]

@@ -1,0 +1,13 @@
+# PiPER X — identity binding for the six arm joints (simulation-only).
+schema: jcheng.teleop.binding.v1
+profile_id: piper_x_demo
+profile_hash: "sha256:caee62005c6cefb85cd17581bc6371841cf632bf17356bc6e73cb087dd94028a"
+source_id: piper_x_demo
+joints:
+  - {input: 0, joint: joint1, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+  - {input: 1, joint: joint2, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+  - {input: 2, joint: joint3, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+  - {input: 3, joint: joint4, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+  - {input: 4, joint: joint5, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+  - {input: 5, joint: joint6, sign: 1, offset_rad: 0.0, deadzone: 0.05, hysteresis: 0.02}
+modes: [JOINT_VELOCITY]

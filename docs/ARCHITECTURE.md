@@ -1,9 +1,10 @@
 # Architecture — jcheng-teleop
 
 > Status: **Experimental** as of 2026-11-26. Version 0.3.0.
-> M0 design is approved; the M1 ROS-free core and CLI are implemented. There is
-> still no ROS node, no DDS domain, no input device access, no published intent
-> and no motion. The M2+ sections remain a design plan.
+> M0 design is approved; the M1 ROS-free core and CLI are implemented. M2 adds a
+> test-only ROS intent publisher and simulation L3; there is still no input
+> device access, no lease adapter, no production gateway client and no motion.
+> The M2+ sections remain a design plan beyond that transport.
 
 ## 1. Position in the ecosystem
 

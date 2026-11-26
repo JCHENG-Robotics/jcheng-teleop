@@ -1,21 +1,27 @@
-"""M1 command-line entry point.
+"""M1/M3 command-line entry point.
 
 Runs the ROS-free core against a virtual or JSONL input and the in-process
-mock gateway. It never opens a socket, device or ROS graph.
+mock gateway. It never opens a socket, device or ROS graph. With `--record` it
+also writes a `jcheng.teleop.capture.v1` package outside the repository; the
+recorder is an observer and cannot block the tick loop or the stop path.
 """
 
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import sys
 from typing import Sequence
 
+from . import __version__
 from .adapters.gateway.mock import MockGateway
 from .adapters.input.jsonl import JsonlInputSource
 from .adapters.input.keyboard import KeyboardInputSource, ScriptedKeySource
 from .adapters.input.virtual import VirtualInputSource
+from .capture import CaptureMetadata, EpisodeRecorder, verify_capture
 from .core.clock import ManualClock
 from .core.model import InputSample, Mode, SessionState
 from .core.profile import load_binding, load_profile, resolve_profile
@@ -63,9 +69,62 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tick-ms", type=int, default=20)
     parser.add_argument("--stop-file", help="request a system stop when this file appears")
     parser.add_argument("--trace", help="write one JSON result per line")
+    parser.add_argument(
+        "--record",
+        metavar="DATA_ROOT",
+        help="write a capture package under this root (outside any git worktree)",
+    )
+    parser.add_argument("--capture-id", help="capture directory name (default: timestamped)")
+    parser.add_argument("--task", default="cli-demo", help="task id recorded in the manifest")
     parser.add_argument("--mock", action="store_true", default=True, help="mock gateway only (M1)")
     parser.add_argument("--contract-hash", default=DEMO_CONTRACT)
     return parser
+
+
+def _capture_metadata(args, resolved, *, ticks: int) -> CaptureMetadata:
+    capture_id = args.capture_id or (
+        "capture-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    )
+    generator_config = {
+        "input": args.input,
+        "ticks": ticks,
+        "tick_ms": args.tick_ms,
+        "duration": args.duration,
+        "stop_file": bool(args.stop_file),
+        "profile_hash": resolved.profile_hash,
+        "binding_hash": resolved.binding.binding_hash,
+    }
+    return CaptureMetadata(
+        capture_id=capture_id,
+        created_at=datetime.now(timezone.utc).isoformat(),
+        teleop_version=__version__,
+        contract_hash=args.contract_hash,
+        profile_id=resolved.profile_id,
+        profile_hash=resolved.profile_hash,
+        binding_hash=resolved.binding.binding_hash,
+        environment_class="mock",
+        source_class="scripted",
+        session_id=capture_id,
+        task_id=args.task,
+        task_description=f"CLI {args.input} mock teleoperation ({args.task})",
+        joint_names=resolved.joint_names,
+        profile_source="fixture",
+        has_gripper=resolved.profile.gripper is not None,
+        generator_id="jcheng-teleop-cli",
+        generator_seed=0,
+        generator_config_hash="sha256:"
+        + hashlib.sha256(
+            json.dumps(generator_config, sort_keys=True).encode("utf-8")
+        ).hexdigest(),
+        tick_ms=args.tick_ms,
+        nominal_hz=1000.0 / args.tick_ms,
+        deadman_ms=300,
+        limitations=(
+            "mock gateway only; no RobotState observation stream",
+            "joint frames are not measured or bus-verified",
+            "session close event is not recorded",
+        ),
+    )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -133,10 +192,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         tick_ns=tick_ns,
         stop_file=args.stop_file,
     )
+    recorder: EpisodeRecorder | None = None
+    if args.record:
+        try:
+            recorder = EpisodeRecorder(
+                Path(args.record), _capture_metadata(args, resolved, ticks=ticks)
+            )
+        except (OSError, ValueError) as exc:
+            session.close()
+            print(f"record error: {exc}", file=sys.stderr)
+            return 3
+
+        def _observe(result, sample, now_ns) -> bool:
+            recorder.observe(result, sample, now_ns)
+            return not recorder.faulted
+
+        runner.observer = _observe
     try:
         results = runner.run_ticks(ticks)
     except (OSError, ValueError) as exc:
         session.close()
+        if recorder is not None:
+            recorder.close(outcome="aborted", outcome_source="automatic")
         print(f"input error: {exc}", file=sys.stderr)
         return 3
     final_state = session.state
@@ -145,17 +222,42 @@ def main(argv: Sequence[str] | None = None) -> int:
     lines = [json.dumps(result.to_dict(), sort_keys=True) for result in results]
     if args.trace:
         Path(args.trace).write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    faults = sum(
+        1
+        for result in results
+        for event in result.events
+        if event.severity.value == "fault"
+    )
     summary = {
         "state": final_state.value,
         "ticks": len(results),
         "submitted": sum(1 for result in results if result.submitted),
         "stop_sent": sum(1 for result in results if result.stop_sent),
-        "faults": sum(
-            1
-            for result in results
-            for event in result.events
-            if event.severity.value == "fault"
-        ),
+        "faults": faults,
     }
+    capture_invalid = False
+    if recorder is not None:
+        if recorder.faulted:
+            outcome, outcome_source = "aborted", "automatic"
+        elif faults:
+            outcome, outcome_source = "failure", "automatic"
+        else:
+            outcome, outcome_source = "unknown", "automatic"
+        seal = recorder.close(outcome=outcome, outcome_source=outcome_source)
+        report = verify_capture(seal.capture_path.parent, seal.capture_path.name)
+        capture_invalid = bool(seal.fault) or not report.ok
+        summary["capture"] = {
+            "path": str(seal.capture_path),
+            "manifest_sha256": seal.manifest_sha256,
+            "verify": report.status,
+            "rows_written": seal.written,
+            "rows_dropped": sum(seal.dropped.values()),
+            "dropped_priority": seal.dropped_priority,
+            "fault": seal.fault,
+        }
+        for message in report.errors:
+            print(f"capture verify: {message}", file=sys.stderr)
     print(json.dumps(summary, sort_keys=True))
+    if capture_invalid:
+        return 5
     return 0 if final_state is not SessionState.FAULT else 1

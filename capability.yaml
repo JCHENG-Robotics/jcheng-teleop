@@ -2,17 +2,19 @@
 # jcheng-teleop is an L3 capability: operator input to teleoperation intent
 # (JCHENG-Robotics/.github docs/repo-taxonomy.md, layer L3).
 #
-# v0.3.0 implements the M1 ROS-free core and CLI. It has no ROS node, no DDS
-# domain, no input device access and publishes no intent. The empty runtime
-# surface is deliberate: a planned capability must not claim a topic it does
-# not serve. `TeleopCommand.msg` is reserved in jcheng-interfaces v0.1.0, but
-# no system consumer exists yet. The M2 streaming path is a system-side
-# prerequisite (docs/proposals/SYSTEM_TELEOP_INTAKE.md); the reserved topic
-# stays unused until that path is accepted and implemented.
+# v0.3.0 implements the M1 ROS-free core and CLI plus the later M2-M7 offline
+# surfaces (capture, replay, status API, supervised preflight). The manifest
+# deliberately keeps an empty runtime: `ros2_ws/` ships a **test-only** M2
+# publisher on domain 42, but it has no production lease adapter, no operator
+# input device and is not a deployed capability runtime. Declaring it requires
+# the `intent_source` class proposed in jcheng-interfaces
+# (docs/proposals/capability-intent-source.md); until that is approved and
+# tagged, `class: offline` with an empty runtime is the honest claim. The
+# system layer remains the only origin of motion.
 #
 # The safety envelope below is declared even while `class: offline`; it is not
-# active because the runtime surface is empty. It becomes binding in the
-# contract-first M2 PR, together with the node, scopes and runtime surface.
+# active because the runtime surface is empty. It becomes binding together
+# with the `intent_source` class, the node scopes and the admitted topic.
 schema_version: 1
 name: jcheng-teleop
 version: 0.3.0
