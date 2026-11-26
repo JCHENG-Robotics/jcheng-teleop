@@ -30,12 +30,26 @@ for f in \
   .gitignore \
   capability.yaml \
   docs/ARCHITECTURE.md \
+  docs/TELEOP_CORE.md \
+  docs/SAFETY_MODEL.md \
+  docs/DATA_COLLECTION.md \
+  docs/INTEGRATION_CONTRACT.md \
+  docs/DEPENDENCY_REVIEW.md \
   docs/INPUT.md \
-  docs/INTEGRATION.md \
+  docs/M1_PLAN.md \
+  docs/proposals/TELEOP_COMMAND_V0.2.md \
+  docs/proposals/SYSTEM_TELEOP_INTAKE.md \
+  pyproject.toml \
+  src/jcheng_teleop/cli.py \
   tests/test_contract.py \
   tests/test_no_hardware.py \
+  tests/test_session.py \
   scripts/check_repo_gate.sh \
   evidence/20261126_scaffold/README.md \
+  evidence/20261126_m0_design/README.md \
+  evidence/20261126_m0_design/review.md \
+  evidence/20261126_m1_core/README.md \
+  evidence/20261126_m1_core/review.md \
   .github/workflows/ci.yml
 do
   require_file "$f"
@@ -68,7 +82,7 @@ if find . -path ./.git -prune -o \
 fi
 
 # No dataset or model store inside the repository.
-for d in datasets models recordings sessions; do
+for d in datasets models recordings sessions captures episodes; do
   if [[ -d "$d" ]] && find "$d" -type f -print | grep -q .; then
     echo "ERROR: $d/ must stay outside the repository." >&2
     fail=1

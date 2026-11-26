@@ -58,10 +58,11 @@ def test_safety_is_offline_and_scoped_out():
     }
     assert safety["class"] == "offline"
     assert safety["scopes"] == []
-    # Required by the v1 schema; vacuous while no intent is produced.
+    # Required by the v1 schema; the envelope is declared but inactive while
+    # the capability is offline.
     assert safety["requires_lease"] is True
-    assert safety["max_rate_hz"] == 1
-    assert safety["deadman_ms"] == 500
+    assert safety["max_rate_hz"] == 50
+    assert safety["deadman_ms"] == 300
 
 
 def test_hardware_access_is_none():
@@ -77,9 +78,9 @@ def test_runtime_surface_is_empty():
 
 
 def test_reserved_teleop_stream_is_documented_not_claimed():
-    integration = (ROOT / "docs/INTEGRATION.md").read_text(encoding="utf-8")
+    integration = (ROOT / "docs/INTEGRATION_CONTRACT.md").read_text(encoding="utf-8")
     # The stream contract exists in jcheng-interfaces v0.1.0 but is reserved
-    # until the first teleoperation pilot.
+    # until the system-side intake and the first teleoperation pilot exist.
     assert "TeleopCommand" in integration
     assert "/jcheng/intent/teleop" in integration
     assert MANIFEST["runtime"]["publishes"] == []
@@ -94,12 +95,41 @@ def test_document_set_exists():
         "ACCEPTANCE.md",
         "LICENSE-REVIEW.md",
         "docs/ARCHITECTURE.md",
+        "docs/TELEOP_CORE.md",
+        "docs/SAFETY_MODEL.md",
+        "docs/DATA_COLLECTION.md",
+        "docs/INTEGRATION_CONTRACT.md",
+        "docs/DEPENDENCY_REVIEW.md",
         "docs/INPUT.md",
-        "docs/INTEGRATION.md",
+        "docs/M1_PLAN.md",
+        "docs/proposals/TELEOP_COMMAND_V0.2.md",
+        "docs/proposals/SYSTEM_TELEOP_INTAKE.md",
+        "pyproject.toml",
+        "src/jcheng_teleop/cli.py",
+        "tests/test_session.py",
         "scripts/check_repo_gate.sh",
         "evidence/20261126_scaffold/README.md",
+        "evidence/20261126_m0_design/README.md",
+        "evidence/20261126_m0_design/review.md",
+        "evidence/20261126_m1_core/README.md",
+        "evidence/20261126_m1_core/review.md",
     ):
         assert (ROOT / name).is_file(), f"missing {name}"
+
+
+def test_roadmap_covers_the_full_m0_to_m9_path():
+    roadmap = (ROOT / "ROADMAP.md").read_text(encoding="utf-8")
+    for index in range(10):
+        assert f"## M{index} —" in roadmap, f"missing M{index} section"
+
+
+def test_acceptance_is_explicit_about_m1_scope():
+    acceptance = (ROOT / "ACCEPTANCE.md").read_text(encoding="utf-8")
+    assert "M1" in acceptance
+    assert "L1" in acceptance
+    assert "in-process L2" in acceptance or "in-process" in acceptance
+    assert "hardware" in acceptance.lower()
+    assert "not hardware evidence" in acceptance.lower() or "not a hardware" in acceptance.lower()
 
 
 def test_readme_required_sections():

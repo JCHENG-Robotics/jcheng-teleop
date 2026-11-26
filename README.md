@@ -1,38 +1,52 @@
 # jcheng-teleop
+**English** | [简体中文](README.zh-CN.md)
 
-> Status: **Experimental** as of 2026-11-26. Version 0.1.0.
-> Admission-only scaffold: the repository defines the teleoperation intent
-> boundary, but contains no operator input adapter, no ROS node and no
-> published intent. Nothing in it is used by the running robot.
-> English canonical; see [README.zh-CN.md](README.zh-CN.md) for the Chinese
-> translation.
+> Status: **Experimental** as of 2026-11-26. Version 0.3.0.
+> M0 design is approved. The M1 ROS-free core and CLI are implemented and
+> covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
+> In progress and depends on the system teleop intake and simulation bridge. There is still no ROS node, no DDS
+> domain, no input device access, no published intent and no motion. The
+> physical operator input adapter is outside this repository; device-free input
+> sources and mappings are in-repo. Nothing here is used by the running robot.
+>
+> English canonical; the Chinese README is a translation.
 
-`jcheng-teleop` is the L3 teleoperation capability of the JCHENG ecosystem. Its
-charter is to turn operator input into bounded, lease-gated,
-deadman-protected **teleoperation intent** for the system layer. Intent is a
-proposal: the motion arbiter samples it and the system layer applies the lease,
-deadman, limits and stop latch before anything moves. This repository never
-commands hardware, never opens a device and never becomes a motion authority.
+`jcheng-teleop` is the L3 teleoperation and demonstration-capture capability of
+the JCHENG ecosystem. Its charter is to turn operator input into bounded,
+lease-gated, deadman-protected **teleoperation intent** for the system layer,
+and to capture reproducible demonstration episodes without becoming a motion
+authority. The design targets one code base across the ArmPi Ultra 5-DoF arm,
+the Gate-2 arm, the PiPER X 6-DoF arm and future leader arms; robot differences
+belong in profiles, not in copied control cores. This is a design target: the
+PiPER X CAN profile and hardware path do not exist yet, and Gate-2 is
+simulation-only today.
 
-The contract already exists. `TeleopCommand.msg` is defined and reserved in
-`jcheng-interfaces` v0.1.0. The stream is enabled only at the first
-teleoperation pilot; v0.1.0 does not publish it.
+The system layer remains the only origin of motion. Teleoperation proposes;
+the gateway, lease, motion arbiter and safety supervisor decide. This
+repository never opens a robot device, never publishes a vendor topic, never
+calls `ExecuteMotion` and never sends a servo or motor command.
 
 ## Scope and boundary
 
 | Item | This repository |
 |---|---|
 | Layer | L3 capability (`capability.yaml`) |
-| Inputs | Operator input samples from an adapter outside this repository (M1 onward); robot, safety and lease state from the system layer (M2) |
-| Outputs | Teleoperation intent on the planned `/jcheng/intent/teleop` stream, domain 42 (M2); nothing in v0.1.0 |
-| Motion authority | None in v0.1.0 (`safety.class: offline`, empty runtime surface) |
-| Hardware access | `none` |
-| Owned devices | none; a physical input adapter is operator-side and outside the capability boundary |
-| Forbidden | device access, vendor topics, `/move_action`, `/cmd_vel`, `ExecuteMotion`, hardware commands, fabricated state |
+| Inputs | Normalized input samples from a device-free source (virtual/keyboard/JSONL/gamepad mapping) or an operator-side adapter (M1 onward); read-only robot, safety and lease state from the system layer (M2 onward) |
+| Outputs | Bounded action intent to an in-process mock gateway (M1); `TeleopCommand` on the planned `/jcheng/intent/teleop` stream, domain 42 (M2 onward); capture packages outside git (M3 onward). Nothing leaves the process in v0.3.0 |
+| Motion authority | None. The system gateway, lease, arbiter and safety supervisor remain authoritative |
+| Hardware access | `none` (`capability.yaml`); no robot device and no operator input device is opened here |
+| Owned devices | None. A physical gamepad, keyboard, wheel, pendant or leader arm is operator-side and outside the capability boundary. M1 provides device-free mapping and tests; the OS device driver stays operator-side. |
+| Forbidden | Robot device access, vendor topics, `/move_action`, `/cmd_vel`, `ExecuteMotion`, hardware commands, fabricated state, simulation data labelled as hardware |
+| Runtime in v0.3.0 | Local CLI only: no DDS domain, no ROS node, no publisher, no subscriber, no service, no device |
 
-The system layer is the only origin of motion. This repository publishes
-intent, never a trajectory or a servo/motor command. Base chassis intent
-belongs to `jcheng-mobile`; teleoperation does not publish it.
+The current `jcheng-system` has **no teleoperation consumer**. Its gateway and
+motion arbiter accept discrete `MotionCommand` requests; the reserved
+`TeleopCommand` stream is not subscribed anywhere. M2 therefore depends on a
+system-side teleoperation intake and streaming servo path, proposed in
+[docs/INTEGRATION_CONTRACT.md](docs/INTEGRATION_CONTRACT.md) and
+[docs/proposals/SYSTEM_TELEOP_INTAKE.md](docs/proposals/SYSTEM_TELEOP_INTAKE.md).
+Publishing the reserved topic without that consumer would be inert and is not
+claimed.
 
 ## Repository layout
 
@@ -40,14 +54,21 @@ belongs to `jcheng-mobile`; teleoperation does not publish it.
 jcheng-teleop/
 ├── capability.yaml                 # admission manifest (offline, hardware_access: none)
 ├── docs/
-│   ├── ARCHITECTURE.md             # input, intent and system planes
-│   ├── INPUT.md                    # input samples, conditioning and deadman rules
-│   └── INTEGRATION.md              # admission, lease, preemption and failure semantics
-├── tests/
-│   ├── test_contract.py            # manifest and document-set checks
-│   └── test_no_hardware.py         # static no-device / no-motion scan
+│   ├── ARCHITECTURE.md             # context, modules, lifecycles, decisions
+│   ├── TELEOP_CORE.md              # input conditioning, mapping, sessions, APIs
+│   ├── SAFETY_MODEL.md             # hazards, state machine, stop paths, residual risk
+│   ├── DATA_COLLECTION.md          # capture, provenance, time sync, LeRobot mapping
+│   ├── INTEGRATION_CONTRACT.md     # system, simulation, learning, studio contracts
+│   ├── DEPENDENCY_REVIEW.md        # prior art, licenses, dependency decisions
+│   ├── INPUT.md                    # input sample and adapter boundary
+│   ├── M1_PLAN.md                  # M1 work packages, tree, test matrix, blockers
+│   └── proposals/                  # contract-first proposals; no interface is changed
+├── src/jcheng_teleop/              # ROS-free core, adapters, CLI
+├── examples/armpi_ultra_demo/      # demo profile + binding
+├── tests/                          # unit, in-process L2 and static boundary tests
 ├── scripts/check_repo_gate.sh      # repository gate (local and CI)
-├── evidence/20261126_scaffold/     # M0 evidence record
+├── evidence/                       # L0/L1/L2 evidence records
+├── pyproject.toml                  # package metadata and pytest config
 ├── VERSION
 ├── README.md / README.zh-CN.md
 ├── ROADMAP.md / CHANGELOG.md / ACCEPTANCE.md
@@ -56,43 +77,61 @@ jcheng-teleop/
 
 ## Requirements
 
-- Python 3.10 or newer (CI uses 3.12), `pytest` 8.3.4 and `PyYAML` 6.0.2.
-- No ROS installation for v0.1.0. ROS 2 Humble is required only from M2, when
-  the intent node exists.
-- No input device is required for the gate. A physical gamepad, wheel or
-  pendant adapter is operator-side and never opened by this repository.
-- Session records stay outside the repository; recordings are never committed.
+- Python 3.10 or newer (CI uses 3.12), `PyYAML` 6.0+ at runtime, `pytest` 7.4+
+  for tests. CI pins `pytest==8.3.4` and `PyYAML==6.0.2`.
+- No ROS installation is required for M1. ROS 2 Humble is required only when
+  the intent node exists (M2), and it is tested in a `ros:humble` container.
+- No input device and no robot are required. A physical adapter is
+  operator-side; this repository consumes normalized samples, not devices.
+- Capture packages and datasets stay outside the repository, under an
+  operator-controlled data root. They are never committed.
 
 ## Quick start
 
 ```bash
 python3 -m pytest -q tests
 bash scripts/check_repo_gate.sh
+
+PYTHONPATH=src python3 -m jcheng_teleop \
+  --profile examples/armpi_ultra_demo/profile.yaml \
+  --binding examples/armpi_ultra_demo/binding.yaml \
+  --input virtual --ticks 20
 ```
 
 The gate checks the document set, the admission manifest, relative links,
-secrets, model weights, recordings and the two test modules. It touches no
-robot and opens no device.
+secrets, model weights, recordings and the static boundary tests. The CLI runs
+against an in-process mock gateway. Neither touches a robot or opens a device.
 
 ## Validation status
 
 | Claim | Status | Evidence |
 |---|---|---|
-| Repository gate and unit tests pass | Verified (L0/L1, 2026-11-26) | `evidence/20261126_scaffold/`; [CI run](https://github.com/JCHENG-Robotics/jcheng-teleop/actions/runs/45763190477) |
-| Manifest declares `hardware_access: none` and an empty runtime surface | Verified (L0, 2026-11-26) | `tests/test_contract.py` |
-| No device, vendor topic or motion call exists in the tree | Verified (L0, 2026-11-26) | `tests/test_no_hardware.py` |
-| Teleoperation intent behavior | Unverified | Not implemented (M1–M2) |
+| M0 document set, links, manifest and static no-device scan pass | Verified (L0/L1, 2026-11-26) | `evidence/20261126_m0_design/`; `tests/` |
+| M1 ROS-free core: conditioning, mapping, deadman, session, mock gateway | Partially verified (L1, 2026-11-26; M1 acceptance pending) | `evidence/20261126_m1_core/`; `tests/` |
+| M1 deterministic trace and no-device boundary | Partially verified (L1/L2 in-process, 2026-11-26; acceptance pending) | `evidence/20261126_m1_core/`; `tests/test_runner_determinism.py` |
+| Ecosystem audit and cross-repository contract gaps are recorded | Verified (L0, 2026-11-26) | [docs/INTEGRATION_CONTRACT.md](docs/INTEGRATION_CONTRACT.md); [docs/DEPENDENCY_REVIEW.md](docs/DEPENDENCY_REVIEW.md) |
+| Input conditioning, mapping, sessions and deadman behavior | Partially verified (L1, 2026-11-26; acceptance pending) | `tests/test_conditioning.py`, `test_deadman.py`, `test_session.py` |
+| Intent publication, lease gating and preemption | Unverified | Not implemented (M2); system consumer absent |
+| Capture, replay and LeRobot export | Unverified | Not implemented (M3–M4) |
+| Hardware teleoperation | Unverified | No session authorized; no e-stop on the platform |
 
-Full report: [ACCEPTANCE.md](ACCEPTANCE.md).
+Full report: [ACCEPTANCE.md](ACCEPTANCE.md). M0 design is approved. M1 tests
+pass at L1/in-process L2, but M1 acceptance is **Inconclusive** until the
+independent code review is re-run on a frozen artifact. M2 and hardware are
+unverified.
 
 ## Related repositories
 
-- [`jcheng-interfaces`](https://github.com/JCHENG-Robotics/jcheng-interfaces) — contract source, `TeleopCommand.msg` and the contract hash.
-- [`jcheng-system`](https://github.com/JCHENG-Robotics/jcheng-system) — privileged runtime; sole owner of leases, arbitration, motion and hardware access.
-- [`jcheng-mobile`](https://github.com/JCHENG-Robotics/jcheng-mobile) — base chassis capability and the base intent stream.
-- [`jcheng-perception`](https://github.com/JCHENG-Robotics/jcheng-perception) — advisory perception targets; read-only context for the operator.
-- [`jcheng-ops`](https://github.com/JCHENG-Robotics/jcheng-ops) — unattended health and watchdogs.
-- [`.github`](https://github.com/JCHENG-Robotics/.github) — ecosystem roadmap, changelog, acceptance and the repository taxonomy.
+- [`jcheng-interfaces`](https://github.com/JCHENG-Robotics/jcheng-interfaces) — contract source, `TeleopCommand.msg`, schemas and contract hash.
+- [`jcheng-system`](https://github.com/JCHENG-Robotics/jcheng-system) — privileged runtime; gateway, leases, arbiter, safety and the only motion origin.
+- [`jcheng-simulation`](https://github.com/JCHENG-Robotics/jcheng-simulation) — robot catalog and offline plant on domain 43; one plant at a time; profiles and `/sim/*` surfaces.
+- [`jcheng-learning`](https://github.com/JCHENG-Robotics/jcheng-learning) — dataset contract, training and policy artifacts; owns `jcheng.dataset.v1`.
+- [`jcheng-studio`](https://github.com/JCHENG-Robotics/jcheng-studio) — operator console; gateway HTTP/WS only, no DDS or device.
+- [`jcheng-applications`](https://github.com/JCHENG-Robotics/jcheng-applications) — task orchestration and reusable gateway-client patterns.
+- [`jcheng-benchmark`](https://github.com/JCHENG-Robotics/jcheng-benchmark) — offline JSONL scoring; no replay execution.
+- [`jcheng-mobile`](https://github.com/JCHENG-Robotics/jcheng-mobile) — base chassis intent owner.
+- [`jcheng-ops`](https://github.com/JCHENG-Robotics/jcheng-ops) — unattended health probes and watchdogs.
+- [`.github`](https://github.com/JCHENG-Robotics/.github) — governance, taxonomy, documentation standard and hardware workflow.
 
 ## License
 

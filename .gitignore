@@ -13,6 +13,8 @@ recordings/
 sessions/
 datasets/
 models/
+captures/
+episodes/
 *.pt
 *.onnx
 *.engine
