@@ -5,6 +5,7 @@ contract. The recorder never blocks the control loop or the stop path, and a
 capture never relabels simulation or mock data as hardware.
 """
 
+from .observation import VERIFICATIONS, ObservationSample
 from .provenance import (
     ENVIRONMENT_CLASSES,
     OUTCOMES,
@@ -22,11 +23,13 @@ __all__ = [
     "OUTCOMES",
     "SCHEMA",
     "SOURCE_CLASSES",
+    "VERIFICATIONS",
     "CaptureMetadata",
     "CapturePathError",
     "CaptureWriter",
     "EpisodeRecorder",
     "EpisodeSummary",
+    "ObservationSample",
     "ProvenanceError",
     "VerifyReport",
     "lease_reference",

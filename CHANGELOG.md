@@ -18,7 +18,19 @@ All notable changes to this project are documented here. Format based on
 - CLI `--record DATA_ROOT`, `--capture-id` and `--task`; CLI captures are
   `environment_class=mock`, `source_class=scripted`, and the capture root must
   be outside a git worktree.
-- `tests/test_capture.py` (20 tests) and `evidence/20261126_m3_capture/`.
+- `tests/test_capture.py` (26 tests) and `evidence/20261126_m3_capture/`.
+- Observation rows (`jcheng.teleop.observation.v1`) copied from
+  `/jcheng/telemetry/state`, with `truth`/`verification` never reinterpreted.
+  The label gate accepts `bus` only in a hardware capture and `simulated` only
+  in a simulation capture with a truth label; a rejected row becomes an
+  `OBSERVATION_REJECTED` event.
+- ROS demo harness capture: `record_root`, `capture_id`, `task`,
+  `environment_class` (`mock|simulation`), `sim_truth_label`, `simulator_repo`,
+  `simulator_version`, `state_topic` parameters; input/action/observation rows
+  and a `SESSION_CLOSED` event. A capture fault sends one neutral frame and
+  stops the script.
+- Integration evidence: mock capture 252 observation rows (`commanded`/`timed`);
+  simulation capture 188 rows (`measured`/`simulated`), joint1 0 -> 0.1361 rad.
 
 - M2 ROS 2 publisher `ros2_ws/src/jcheng_teleop_ros` and its Humble build
   evidence. The publisher takes an operator-supplied lease id and never mints

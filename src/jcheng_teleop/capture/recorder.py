@@ -1,10 +1,10 @@
-"""Episode recorder: turns tick results into capture stream rows.
+"""Episode recorder: turns tick results and state telemetry into stream rows.
 
-The recorder is an observer, not a control component. `observe()` builds plain
-dicts and hands them to the non-blocking writer; it never raises into the tick
-loop and never mutates session state. Stop intents, gateway results and
-safety/fault events are queued as priority rows so a full queue drops ordinary
-input/action rows first.
+The recorder is an observer, not a control component. Every `record_*` method
+builds a plain dict and hands it to the non-blocking writer; none of them raises
+into a tick loop or a ROS callback. Stop intents, gateway results, rejected
+observations and safety/fault events are queued as priority rows so a full
+queue drops ordinary input/action rows first.
 """
 
 from __future__ import annotations
@@ -14,8 +14,9 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
-from ..core.model import ActionIntent, GatewayResult, InputSample, TeleopEvent, TickResult
-from .provenance import SCHEMA, CaptureMetadata
+from ..core.model import ActionIntent, GatewayResult, InputSample, Severity, TeleopEvent, TickResult
+from .observation import ObservationSample
+from .provenance import SCHEMA, CaptureMetadata, ProvenanceError
 from .writer import CaptureWriter, utc_now
 
 INPUT_SCHEMA = "jcheng.teleop.input.v1"
@@ -33,6 +34,7 @@ _PRIORITY_EVENT_CODES = frozenset(
         "DEADMAN_TIMEOUT",
         "LOOP_WATCHDOG",
         "LOOP_OVERRUN",
+        "OBSERVATION_REJECTED",
     }
 )
 
@@ -52,6 +54,7 @@ class EpisodeSummary:
     written: dict[str, int]
     dropped: dict[str, int]
     dropped_priority: int
+    rejected_observations: int
     fault: str | None
 
 
@@ -77,6 +80,7 @@ class EpisodeRecorder:
         self.tick_id = 0
         self._last_input_seq: int | None = None
         self._fault_events = 0
+        self.rejected_observations = 0
 
     @property
     def faulted(self) -> bool:
@@ -86,14 +90,99 @@ class EpisodeRecorder:
     def fault(self) -> str | None:
         return self.writer.fault
 
-    def _base(self, schema: str, now_ns: int) -> dict[str, Any]:
+    def begin_tick(self, now_ns: int) -> int:
+        """Start one logical tick; rows written for it share the tick id."""
+        self.tick_id += 1
+        return self.tick_id
+
+    def _base(self, schema: str, now_ns: int, tick_id: int) -> dict[str, Any]:
         return {
             "schema": schema,
             "capture_id": self.metadata.capture_id,
-            "tick_id": self.tick_id,
+            "tick_id": int(tick_id),
             "t_mono_ns": int(now_ns),
             "clock_id": self.metadata.clock_id,
         }
+
+    # ---- public row writers (never raise) ----
+
+    def record_input(
+        self, sample: InputSample, now_ns: int, *, tick_id: int | None = None
+    ) -> bool:
+        if self.writer.faulted:
+            return False
+        tick = self.begin_tick(now_ns) if tick_id is None else tick_id
+        if sample.seq == self._last_input_seq:
+            return True
+        self._last_input_seq = sample.seq
+        return self.writer.record("input", self._input_row(sample, now_ns, tick))
+
+    def record_action(
+        self, intent: ActionIntent, now_ns: int, *, tick_id: int | None = None
+    ) -> bool:
+        if self.writer.faulted:
+            return False
+        tick = self.begin_tick(now_ns) if tick_id is None else tick_id
+        return self.writer.record(
+            "action",
+            self._action_row(intent, now_ns, tick),
+            priority=intent.purpose == "stop",
+        )
+
+    def record_event(
+        self,
+        code: str,
+        severity: Severity,
+        now_ns: int,
+        *,
+        detail: dict[str, Any] | None = None,
+        tick_id: int | None = None,
+    ) -> bool:
+        if self.writer.faulted:
+            return False
+        tick = self.begin_tick(now_ns) if tick_id is None else tick_id
+        event = TeleopEvent(code=code, severity=severity, at_ns=int(now_ns), detail=detail or {})
+        if severity is Severity.FAULT:
+            self._fault_events += 1
+        return self.writer.record(
+            "events",
+            self._event_row(event, now_ns, tick),
+            priority=severity is Severity.FAULT or code in _PRIORITY_EVENT_CODES,
+        )
+
+    def record_observation(
+        self,
+        observation: ObservationSample,
+        now_ns: int,
+        *,
+        tick_id: int | None = None,
+    ) -> bool:
+        if self.writer.faulted:
+            return False
+        tick = self.begin_tick(now_ns) if tick_id is None else tick_id
+        try:
+            observation.validate(self.metadata.environment_class)
+        except ProvenanceError as exc:
+            self.rejected_observations += 1
+            self.record_event(
+                "OBSERVATION_REJECTED",
+                Severity.WARNING,
+                now_ns,
+                detail={
+                    "reason": str(exc),
+                    "topic": observation.topic,
+                    "truth": observation.truth,
+                    "verification": observation.verification,
+                },
+                tick_id=tick,
+            )
+            return False
+        row = self._base(OBSERVATION_SCHEMA, now_ns, tick)
+        row.update(observation.to_row())
+        row["environment_class"] = self.metadata.environment_class
+        return self.writer.record("observation", row)
+
+    # ---- runner path ----
 
     def observe(
         self,
@@ -103,26 +192,25 @@ class EpisodeRecorder:
     ) -> None:
         if self.writer.faulted:
             return
-        self.tick_id += 1
-        if sample is not None and sample.seq != self._last_input_seq:
-            self._last_input_seq = sample.seq
-            self.writer.record("input", self._input_row(sample, now_ns))
+        tick = self.begin_tick(now_ns)
+        if sample is not None:
+            self.record_input(sample, now_ns, tick_id=tick)
         if result.intent is not None:
-            self.writer.record(
-                "action",
-                self._action_row(result.intent, now_ns),
-                priority=result.intent.purpose == "stop",
-            )
+            self.record_action(result.intent, now_ns, tick_id=tick)
         if result.gateway_result is not None:
-            self.writer.record("command", self._command_row(result.gateway_result, now_ns), priority=True)
+            self.writer.record(
+                "command",
+                self._command_row(result.gateway_result, now_ns, tick),
+                priority=True,
+            )
         for event in result.events:
-            priority = event.severity.value == "fault" or event.code in _PRIORITY_EVENT_CODES
             if event.severity.value == "fault":
                 self._fault_events += 1
-            self.writer.record("events", self._event_row(event, now_ns), priority=priority)
+            priority = event.severity.value == "fault" or event.code in _PRIORITY_EVENT_CODES
+            self.writer.record("events", self._event_row(event, now_ns, tick), priority=priority)
 
-    def _input_row(self, sample: InputSample, now_ns: int) -> dict[str, Any]:
-        row = self._base(INPUT_SCHEMA, now_ns)
+    def _input_row(self, sample: InputSample, now_ns: int, tick_id: int) -> dict[str, Any]:
+        row = self._base(INPUT_SCHEMA, now_ns, tick_id)
         row.update(
             {
                 "source_id": sample.source_id,
@@ -143,8 +231,8 @@ class EpisodeRecorder:
         )
         return row
 
-    def _action_row(self, intent: ActionIntent, now_ns: int) -> dict[str, Any]:
-        row = self._base(ACTION_SCHEMA, now_ns)
+    def _action_row(self, intent: ActionIntent, now_ns: int, tick_id: int) -> dict[str, Any]:
+        row = self._base(ACTION_SCHEMA, now_ns, tick_id)
         row.update(
             {
                 "mode": intent.mode.value,
@@ -164,8 +252,8 @@ class EpisodeRecorder:
         )
         return row
 
-    def _command_row(self, result: GatewayResult, now_ns: int) -> dict[str, Any]:
-        row = self._base(COMMAND_SCHEMA, now_ns)
+    def _command_row(self, result: GatewayResult, now_ns: int, tick_id: int) -> dict[str, Any]:
+        row = self._base(COMMAND_SCHEMA, now_ns, tick_id)
         row.update(
             {
                 "transport": "mock_gateway",
@@ -178,8 +266,8 @@ class EpisodeRecorder:
         )
         return row
 
-    def _event_row(self, event: TeleopEvent, now_ns: int) -> dict[str, Any]:
-        row = self._base(EVENT_SCHEMA, now_ns)
+    def _event_row(self, event: TeleopEvent, now_ns: int, tick_id: int) -> dict[str, Any]:
+        row = self._base(EVENT_SCHEMA, now_ns, tick_id)
         row.update(
             {
                 "code": event.code,
@@ -200,6 +288,8 @@ class EpisodeRecorder:
         flags: list[str] = []
         if self._fault_events:
             flags.append("fault_events")
+        if self.rejected_observations:
+            flags.append("rejected_observations")
         if self.writer.dropped_priority or any(self.writer.dropped.values()):
             flags.append("dropped_rows")
         manifest = self.metadata.to_manifest(
@@ -220,5 +310,6 @@ class EpisodeRecorder:
             written=seal["written"],
             dropped=seal["dropped"],
             dropped_priority=seal["dropped_priority"],
+            rejected_observations=self.rejected_observations,
             fault=seal["fault"],
         )

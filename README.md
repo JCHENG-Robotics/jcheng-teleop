@@ -9,12 +9,13 @@
 > canonical domain-42 runtime with a domain-43 simulation bridge, and Humble
 > builds pass. PiPER X is simulation-only: no CAN profile, driver bridge or
 > hardware path exists. M3 has started: the capture core (provenance gate,
-> non-blocking writer, seal/verify) records mock CLI sessions; observation
-> rows, media and hardware/simulation captures are not implemented. There is
-> still no input device access, no lease adapter and no production gateway
-> client. The physical operator input adapter is outside this repository;
-> device-free input sources and mappings are in-repo. Nothing here is used by
-> the running robot.
+> non-blocking writer, seal/verify) records mock CLI runs, and the ROS demo
+> harness records labelled observation rows from the system telemetry tap;
+> media, hardware sessions and the 30-episode acceptance are not implemented.
+> There is still no input device access, no lease adapter and no production
+> gateway client. The physical operator input adapter is outside this
+> repository; device-free input sources and mappings are in-repo. Nothing here
+> is used by the running robot.
 >
 > English canonical; the Chinese README is a translation.
 

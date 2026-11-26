@@ -14,6 +14,7 @@ from jcheng_teleop.capture import (
     CapturePathError,
     CaptureWriter,
     EpisodeRecorder,
+    ObservationSample,
     ProvenanceError,
     verify_capture,
 )
@@ -285,6 +286,122 @@ def test_deterministic_streams_for_identical_runs(tmp_path: Path) -> None:
         a = (tmp_path / "a" / "cap" / name).read_bytes()
         b = (tmp_path / "b" / "cap" / name).read_bytes()
         assert a == b, name
+
+
+def _observation(**overrides) -> ObservationSample:
+    base = dict(
+        topic="/jcheng/telemetry/state",
+        source="jcheng_runtime/mock",
+        seq=1,
+        fresh=True,
+        joint_names=("joint1", "joint2"),
+        positions=(0.0, 0.0),
+        velocities=(0.0, 0.0),
+        gripper_position=0.0,
+        base_duty=(0.0, 0.0, 0.0, 0.0),
+        battery_voltage=7.4,
+        profile_hash=HASH,
+        truth="commanded",
+        verification="timed",
+        stamp_ns=0,
+        received_ns=0,
+    )
+    base.update(overrides)
+    return ObservationSample(**base)
+
+
+def _record_observations(tmp_path: Path, meta: CaptureMetadata, *observations) -> EpisodeRecorder:
+    recorder = EpisodeRecorder(tmp_path, meta)
+    for index, observation in enumerate(observations):
+        recorder.record_observation(observation, index * 20_000_000)
+    assert recorder.close().fault is None
+    return recorder
+
+
+def test_mock_capture_records_commanded_observations(tmp_path: Path) -> None:
+    recorder = _record_observations(tmp_path, metadata(), _observation(), _observation(seq=2))
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / "cap-test" / "observation.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(rows) == 2
+    assert rows[0]["truth"] == "commanded"
+    assert rows[0]["verification"] == "timed"
+    assert rows[0]["joint_names"] == ["joint1", "joint2"]
+    assert recorder.rejected_observations == 0
+    assert verify_capture(tmp_path, "cap-test").ok
+
+
+def test_mock_capture_rejects_a_bus_label_and_records_an_event(tmp_path: Path) -> None:
+    recorder = _record_observations(
+        tmp_path, metadata(), _observation(truth="measured", verification="bus")
+    )
+    assert recorder.rejected_observations == 1
+    observation_rows = (tmp_path / "cap-test" / "observation.jsonl").read_text(encoding="utf-8")
+    assert observation_rows.strip() == ""
+    events = (tmp_path / "cap-test" / "events.jsonl").read_text(encoding="utf-8")
+    assert "OBSERVATION_REJECTED" in events
+    report = verify_capture(tmp_path, "cap-test")
+    assert report.ok
+    assert report.status == "degraded"
+
+
+def test_simulation_capture_accepts_simulated_state(tmp_path: Path) -> None:
+    meta = metadata(
+        environment_class="simulation",
+        source_class="human_teleop",
+        profile_source="simulation",
+        sim_truth_label="/sim/truth/source=simulated",
+        simulator_repo="jcheng-simulation",
+        simulator_version="0.1.0",
+    )
+    recorder = _record_observations(
+        tmp_path,
+        meta,
+        _observation(truth="measured", verification="simulated", source="jcheng_runtime/sim_bridge"),
+    )
+    assert recorder.rejected_observations == 0
+    report = verify_capture(tmp_path, "cap-test")
+    assert report.ok, report.errors
+
+
+def test_simulation_capture_rejects_a_bus_label(tmp_path: Path) -> None:
+    meta = metadata(
+        environment_class="simulation",
+        source_class="human_teleop",
+        profile_source="simulation",
+        sim_truth_label="/sim/truth/source=simulated",
+        simulator_repo="jcheng-simulation",
+        simulator_version="0.1.0",
+    )
+    recorder = _record_observations(
+        tmp_path, meta, _observation(truth="measured", verification="bus")
+    )
+    assert recorder.rejected_observations == 1
+
+
+def test_hardware_capture_accepts_a_bus_measurement(tmp_path: Path) -> None:
+    meta = metadata(
+        environment_class="hardware",
+        source_class="human_teleop",
+        profile_source="system",
+        operator_id="op-1",
+        operator_role="teleoperator",
+        supervisor_id="sup-1",
+        authorization_ref="auth-20261126",
+    )
+    recorder = _record_observations(
+        tmp_path, meta, _observation(truth="measured", verification="bus", source="jcheng_telemetry")
+    )
+    assert recorder.rejected_observations == 0
+
+
+def test_observation_length_mismatch_is_rejected(tmp_path: Path) -> None:
+    recorder = _record_observations(
+        tmp_path, metadata(), _observation(positions=(0.0,))
+    )
+    assert recorder.rejected_observations == 1
 
 
 # ---- runner observer contract ----

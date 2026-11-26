@@ -65,6 +65,7 @@ hardware.
 | 2/5/6-DoF profiles run through the same core | L1 | `tests/test_profile.py`; `evidence/20261126_m1_core/profiles.txt` |
 | The same script produces a byte-identical trace | L1/L2 | `tests/test_runner_determinism.py`; `cli_trace_sha256.txt` |
 | Capture provenance is immutable; mock/simulation cannot be relabelled hardware; `replay` is not a new capture | L1 | `tests/test_capture.py`; `docs/DATA_COLLECTION.md` |
+| Observation rows copy `truth`/`verification` and gate `bus`/`simulated` by environment; a rejected row is recorded as an event | L1 | `tests/test_capture.py`; `capture/observation.py` |
 | The recorder cannot block the tick loop or the stop path (bounded queue, observer isolation, stop on recorder fault) | L1/L2 | `tests/test_capture.py`; `core/runner.py` |
 | A sealed capture re-reads with matching hashes; tampering is detected | L1 | `tests/test_capture.py`; `capture/verify.py` |
 | No device, vendor topic, motion call, model weight or recording exists in the tree | L0 | `tests/test_no_hardware.py`; gate |
@@ -77,7 +78,7 @@ hardware.
 | System teleoperation intake and streaming session | Intake + ROS subscriber merged for mock only; `TeleopState` absent | No production consumer |
 | Simulation bridge and multi-robot teleoperation | Test-only bridge; ArmPi, Gate-2 and PiPER X mock L3 proven on domain 42 + 43 | No hardware or canonical PiPER X profile |
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
-| Episode capture | Capture core implemented (M3 slice 1, mock CLI): provenance gate, non-blocking writer, seal and verify, 20 tests; observations, media, hardware/simulation sessions and the 30-episode drill open | No demonstration dataset yet |
+| Episode capture | Capture core implemented (M3 slice 2): provenance gate, non-blocking writer, seal/verify, 26 tests, mock CLI recording and ROS-harness observation rows from the system telemetry tap; media, hardware sessions and the 30-episode drill open | No demonstration dataset yet |
 | Offline replay, quality evaluation and LeRobot export | Not implemented (M4) | No replay/export evidence |
 | Studio teleoperation panel | Not implemented (M5) | Operator cannot observe a live session |
 | Leader-arm and hardware teleoperation | Not implemented (M6); vendor executor cannot stream multi-joint | No hardware claim; no e-stop |

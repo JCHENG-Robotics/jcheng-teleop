@@ -3,10 +3,11 @@
 > Status: **v0.3.0** as of 2026-11-26. M0 design is approved. The M1 ROS-free
 > core and CLI are accepted at L1/in-process L2. M2 is In progress; the system
 > teleop intake, ROS runtime subscriber, teleop ROS publisher and test-only
-> simulation bridge exist. M3 has started with the capture core (provenance,
-> non-blocking writer, seal/verify). No device or hardware path exists in this
-> repository. The full M0–M9 path is recorded here so that later
-> milestones are not redesigned around today's mock-only system.
+> simulation bridge exist. M3 has started: the capture core (provenance,
+> non-blocking writer, seal/verify) records mock CLI runs, and the ROS harness
+> records labelled observation rows from the system telemetry tap. No device or
+> hardware path exists in this repository. The full M0–M9 path is recorded here
+> so that later milestones are not redesigned around today's mock-only system.
 
 ## Current state
 
@@ -17,7 +18,7 @@
 | Research and dependency review | Complete (2026-11-26) | [docs/DEPENDENCY_REVIEW.md](docs/DEPENDENCY_REVIEW.md) |
 | ROS-free teleop core, virtual/keyboard/JSONL/gamepad mapping, CLI | Complete (2026-11-26); L1/in-process L2 accepted | `evidence/20261126_m1_core/`; `tests/` |
 | System teleoperation intake and simulation teleoperation | In progress (M2); system intake/ROS subscriber merged; teleop ROS publisher landed; system test-only sim bridge + ArmPi/Gate-2/PiPER X mock L3 (canonical domain 42 + domain-43 bridge) landed on `feat/teleop-sim-bridge`; PiPER X canonical profile pending | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
-| Episode capture, provenance and time sync | In progress (M3 slice 1); capture core, provenance gate, non-blocking writer, seal/verify and CLI `--record` implemented for the mock CLI; observation/media/hardware/simulation sessions and the 30-episode acceptance open | `evidence/20261126_m3_capture/`; [docs/DATA_COLLECTION.md](docs/DATA_COLLECTION.md) |
+| Episode capture, provenance and time sync | In progress (M3 slice 2); capture core, provenance gate, non-blocking writer, seal/verify and CLI `--record` landed; observation rows now come from `/jcheng/telemetry/state` with a label gate, and the ROS harness records a session-close event. Media, hardware sessions and the 30-episode acceptance remain open | `evidence/20261126_m3_capture/`; [docs/DATA_COLLECTION.md](docs/DATA_COLLECTION.md) |
 | Offline replay, quality evaluation and LeRobot export | Planned (M4) | — |
 | Studio teleoperation panel | Planned (M5) | — |
 | Leader-arm and supervised hardware teleoperation | Planned (M6; system servo path required) | — |
@@ -32,7 +33,7 @@
 | M0 | Admission, architecture, contract and dependency review, M1 plan | Complete (approved 2026-11-26) | Document set, research record, proposals, gate and review pass; operator approved; commit/tag remains an explicit request | `evidence/20261126_m0_design/` |
 | M1 | ROS-free deterministic core, virtual/keyboard/JSONL/gamepad mapping, profile mapping, safety state machine, in-process mock gateway | Complete (2026-11-26); L1/in-process L2 accepted | 111 tests pass; no DDS, device, recording or hardware | `evidence/20261126_m1_core/` |
 | M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher + ArmPi/Gate-2/PiPER X mock L3 on canonical domain 42 + Humble build; PiPER X canonical profile pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
-| M3 | Episode capture, time synchronization, provenance and quality gate | In progress; capture core + provenance gate + non-blocking writer + seal/verify + mock CLI recording landed; observations, media, hardware/simulation sessions and the 30-episode drill open | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | `evidence/20261126_m3_capture/`; `docs/DATA_COLLECTION.md` |
+| M3 | Episode capture, time synchronization, provenance and quality gate | In progress; capture core + provenance gate + non-blocking writer + seal/verify + mock CLI recording + labelled observation rows from the system telemetry tap landed; media, hardware sessions and the 30-episode/disk-full drill open | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | `evidence/20261126_m3_capture/`; `docs/DATA_COLLECTION.md` |
 | M4 | Offline replay, anomaly detection and LeRobot v3 export | Planned | Byte-identical replay; benchmark scores; LeRobot round-trip equality | — |
 | M5 | Studio teleoperation panel and session UX | Planned | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | — |
 | M6 | Leader-arm and supervised hardware teleoperation | Planned | Authorized L5 session with bus-verified stop and no unattended motion | — |
