@@ -6,7 +6,10 @@
 > simulation bridge exist. M3 has started: the capture core (provenance,
 > non-blocking writer, seal/verify) records mock CLI runs, and the ROS harness
 > records labelled observation rows from the system telemetry tap. M4 has
-> started with input replay and an anomaly scan over recorded captures. No
+> input replay, command replay, metrics and benchmark export. M5 has the
+> read-only status API; the studio panel and system stop proxy are on the
+> studio side. M6 is In progress at the offline authorization/preflight stage;
+> hardware streaming and stop confirmation are still missing. No
 > device or hardware path exists in this repository. The full M0–M9 path is
 > recorded here so that later milestones are not redesigned around today's
 > mock-only system.
@@ -23,7 +26,7 @@
 | Episode capture, provenance and time sync | In progress (M3): capture core, provenance gate, non-blocking writer, seal/verify, CLI and ROS-harness recording, labelled observation rows and the session-close event landed. Mock acceptance met: 30 × 60 s valid captures and a storage-fault stop drill. Media, a simulation/hardware episode set and cross-stream time sync remain open | `evidence/20261126_m3_capture/`; `docs/DATA_COLLECTION.md` |
 | Offline replay, quality evaluation and LeRobot export | In progress (M4): input replay, command-payload capture + wire-projection replay, anomalies, basic quality metrics and benchmark JSONL export landed. LeRobot v3 export is blocked on the learning dataset contract and the absolute-position action gap | `evidence/20261126_m4_replay/` |
 | Studio teleoperation panel | In progress (M5); read-only teleop status API (`jcheng.teleop.status.v1`, loopback-only) landed in the ROS harness; studio panel and stop wiring next | [docs/STATUS_API.md](docs/STATUS_API.md) |
-| Leader-arm and supervised hardware teleoperation | Planned (M6; system servo path required) | — |
+| Leader-arm and supervised hardware teleoperation | In progress (M6, offline prerequisites); `jcheng.teleop.authorization.v1` + `jcheng-teleop-preflight` implemented and tested; hardware blocked by the system streaming executor (B2), wire v0.2 (B3), stop confirmation (B9) and no e-stop | [docs/M6_PLAN.md](docs/M6_PLAN.md); `evidence/20261126_m6_preflight/` |
 | Hybrid demonstration/policy data and SmolVLA loop | Planned (M7) | — |
 | Shared autonomy and human-in-the-loop correction | Planned (M8) | — |
 | Mobile manipulation teleoperation | Planned (M9) | — |
@@ -38,7 +41,7 @@
 | M3 | Episode capture, time synchronization, provenance and quality gate | In progress; the recorder, provenance gate, non-blocking writer, seal/verify, observation rows and the mock 30-episode/storage-fault drills are done. Media, a simulation/hardware capture set and action/observation time-sync validation remain | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | `evidence/20261126_m3_capture/`; `docs/DATA_COLLECTION.md` |
 | M4 | Offline replay, anomaly detection and LeRobot v3 export | In progress; input replay, command-payload/wire-projection replay, anomalies, basic metrics and benchmark JSONL export are implemented. LeRobot v3 export is blocked on the learning contract and the absolute-position action gap | Byte-identical replay; benchmark scores; LeRobot round-trip equality | `evidence/20261126_m4_replay/` |
 | M5 | Studio teleoperation panel and session UX | In progress; the read-only status contract and loopback server are implemented; the studio panel, stale-state UX and stop wiring remain | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | [docs/STATUS_API.md](docs/STATUS_API.md) |
-| M6 | Leader-arm and supervised hardware teleoperation | Planned | Authorized L5 session with bus-verified stop and no unattended motion | — |
+| M6 | Leader-arm and supervised hardware teleoperation | In progress; offline authorization and preflight are implemented. Hardware is blocked: streaming executor, position/gripper wire, stop confirmation, no e-stop, PiPER X canonical profile | Authorized L5 session with bus-verified stop and no unattended motion | [docs/M6_PLAN.md](docs/M6_PLAN.md); `evidence/20261126_m6_preflight/` |
 | M7 | Hybrid autonomous grasp + human demonstration + SmolVLA loop | Planned | Mixed-source dataset, policy evaluation and human takeover evidence | — |
 | M8 | Shared autonomy, policy takeover and correction demonstrations | Planned | Authority handover is explicit, bounded and auditable | — |
 | M9 | Mobile manipulation teleoperation and industrial extension | Planned | Coordinated base/arm intent with separate base authority and stop evidence | — |

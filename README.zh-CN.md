@@ -3,7 +3,7 @@
 
 > 状态：**实验性**，2026-11-26。版本 0.3.0。
 > M0 设计已批准；M1 的 ROS-free 核心与 CLI 已实现，并有 L1 与进程内 L2 测试；
-> M1 已在 L1/进程内 L2 层面验收；M2 进行中：System 侧 mock teleop intake/ROS 订阅端与 Teleop ROS publisher 已落地；ArmPi、Gate-2 与 PiPER X mock 的 L3 已通过 canonical 域 42 runtime + 域 43 仿真桥运行，Humble 构建通过。PiPER X 仅用于仿真：不存在 CAN Profile、驱动桥或实机路径。M3 已启动：采集核心（provenance 门禁、非阻塞写入、封包校验）可记录 mock CLI 会话，ROS 演示采集器可从系统 telemetry tap 记录带标签的 observation 行；媒体、实机采集与 30-episode 验收尚未实现。M4 已启动：离线 input replay、command wire-projection replay、anomaly 扫描、质量指标与 benchmark JSONL 导出可用；LeRobot 导出受 learning dataset 契约阻塞。M5 已启动：为 studio 面板提供 loopback-only 只读 teleop 状态 API；面板与 stop 接线尚未实现。目前仍无输入设备访问、无租约适配器、无生产网关客户端。实体操作员输入适配器位于本仓库之外；无设备输入源
+> M1 已在 L1/进程内 L2 层面验收；M2 进行中：System 侧 mock teleop intake/ROS 订阅端与 Teleop ROS publisher 已落地；ArmPi、Gate-2 与 PiPER X mock 的 L3 已通过 canonical 域 42 runtime + 域 43 仿真桥运行，Humble 构建通过。PiPER X 仅用于仿真：不存在 CAN Profile、驱动桥或实机路径。M3 已启动：采集核心（provenance 门禁、非阻塞写入、封包校验）可记录 mock CLI 会话，ROS 演示采集器可从系统 telemetry tap 记录带标签的 observation 行；媒体、实机采集与 30-episode 验收尚未实现。M4 已启动：离线 input replay、command wire-projection replay、anomaly 扫描、质量指标与 benchmark JSONL 导出可用；LeRobot 导出受 learning dataset 契约阻塞。M5 已有 loopback-only 只读 teleop 状态 API；studio 面板与其可选系统停止位于 `jcheng-studio`。M6 处于离线授权/preflight 阶段；硬件流式执行与停止确认仍缺失。目前仍无输入设备访问、无租约适配器、无生产网关客户端。实体操作员输入适配器位于本仓库之外；无设备输入源
 > 与映射位于仓库内。运行中的机器人不会使用其中任何内容。
 >
 > 本文为英文主文档的中文对照；如有歧义，以英文版为准。
@@ -55,7 +55,7 @@ jcheng-teleop/
 │   ├── INPUT.md                    # 输入样本与适配器边界
 │   ├── M1_PLAN.md                  # M1 工作包、目录树、测试矩阵、阻塞项
 │   └── proposals/                  # 契约优先提案；未修改任何接口
-├── src/jcheng_teleop/              # ROS-free 核心、适配器、采集、replay、CLI
+├── src/jcheng_teleop/              # ROS-free 核心、适配器、采集、replay、supervised、CLI
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 意图发布节点
 ├── examples/armpi_ultra_demo/      # ArmPi 演示 profile 与 binding
 ├── examples/gate2_arm_demo/        # Gate-2 演示 profile 与 binding

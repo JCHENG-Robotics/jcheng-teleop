@@ -14,9 +14,11 @@
 > media, hardware sessions and the 30-episode acceptance are not implemented.
 > M4 has started: input replay, command wire-projection replay, anomaly scan,
 > quality metrics and benchmark JSONL export run offline over recorded
-> captures; LeRobot export is blocked on the learning dataset contract. M5 has
-> started: a loopback-only read-only teleop status API exists for the studio
-> panel; the panel and stop wiring are not implemented. There
+> captures; LeRobot export is blocked on the learning dataset contract. M5
+> has a loopback-only read-only teleop status API; the studio panel and its
+> opt-in system stop live in `jcheng-studio`. M6 is In progress at the offline
+> authorization/preflight stage; hardware streaming and stop confirmation are
+> missing. There
 > is still no input device access, no lease adapter and no production gateway
 > client. The physical operator input adapter is outside this repository;
 > device-free input sources and mappings are in-repo. Nothing here is used by
@@ -76,7 +78,7 @@ jcheng-teleop/
 │   ├── INPUT.md                    # input sample and adapter boundary
 │   ├── M1_PLAN.md                  # M1 work packages, tree, test matrix, blockers
 │   └── proposals/                  # contract-first proposals; no interface is changed
-├── src/jcheng_teleop/              # ROS-free core, adapters, capture, replay, CLI
+├── src/jcheng_teleop/              # core, adapters, capture, replay, supervised, CLI
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 intent publisher
 ├── examples/armpi_ultra_demo/      # ArmPi demo profile + binding
 ├── examples/gate2_arm_demo/        # Gate-2 demo profile + binding

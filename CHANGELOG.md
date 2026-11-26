@@ -8,6 +8,14 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M6 supervised-session prerequisites in `src/jcheng_teleop/supervised/`:
+  `jcheng.teleop.authorization.v1` (operator, supervisor, authorization ref,
+  workspace checklist, profile/contract hashes, exact joint order, scope,
+  velocity bound, ≤ 8 h timezone-aware window) and the offline
+  `jcheng-teleop-preflight` CLI. `hardware_ready` is always false and the
+  report lists the streaming, wire v0.2, stop-confirmation, e-stop and
+  PiPER X blockers. `tests/test_supervised.py` (17 tests);
+  `docs/M6_PLAN.md`; `evidence/20261126_m6_preflight/`. No motion.
 - M5 read-only teleop status API: `jcheng.teleop.status.v1` over a
   loopback-only `GET /v1/status` server in the ROS demo harness
   (`status_port` parameter; disabled by default). Reports phase, input age and
