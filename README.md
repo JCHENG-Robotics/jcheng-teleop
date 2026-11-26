@@ -8,10 +8,13 @@
 > publisher have landed; ArmPi, Gate-2 and PiPER X mock L3 run through the
 > canonical domain-42 runtime with a domain-43 simulation bridge, and Humble
 > builds pass. PiPER X is simulation-only: no CAN profile, driver bridge or
-> hardware path exists. There is still no input device access, no lease
-> adapter and no production gateway client. The physical operator input
-> adapter is outside this repository; device-free input sources and mappings
-> are in-repo. Nothing here is used by the running robot.
+> hardware path exists. M3 has started: the capture core (provenance gate,
+> non-blocking writer, seal/verify) records mock CLI sessions; observation
+> rows, media and hardware/simulation captures are not implemented. There is
+> still no input device access, no lease adapter and no production gateway
+> client. The physical operator input adapter is outside this repository;
+> device-free input sources and mappings are in-repo. Nothing here is used by
+> the running robot.
 >
 > English canonical; the Chinese README is a translation.
 
@@ -67,7 +70,7 @@ jcheng-teleop/
 │   ├── INPUT.md                    # input sample and adapter boundary
 │   ├── M1_PLAN.md                  # M1 work packages, tree, test matrix, blockers
 │   └── proposals/                  # contract-first proposals; no interface is changed
-├── src/jcheng_teleop/              # ROS-free core, adapters, CLI
+├── src/jcheng_teleop/              # ROS-free core, adapters, capture, CLI
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 intent publisher
 ├── examples/armpi_ultra_demo/      # ArmPi demo profile + binding
 ├── examples/gate2_arm_demo/        # Gate-2 demo profile + binding

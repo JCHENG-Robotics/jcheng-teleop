@@ -49,7 +49,7 @@ hardware.
 
 | Claim | Level | Evidence |
 |---|---|---|
-| The repository is an L3 capability with `hardware_access: none`, `safety.class: offline` and an empty DDS/runtime surface | L0 | `capability.yaml`; `tests/test_contract.py` |
+| The repository is an L3 capability with `hardware_access: none` and `safety.class: offline`; the manifest still declares an empty runtime surface until the M2 capability PR merges | L0 | `capability.yaml`; `tests/test_contract.py` |
 | The M0 document set, links and full M0–M9 roadmap exist | L0 | gate; `tests/test_contract.py` |
 | The nine module responsibilities, dependencies, interfaces and lifecycles are recorded | L0 | `docs/ARCHITECTURE.md`; `docs/TELEOP_CORE.md` |
 | The ecosystem audit identifies the missing system consumer, discrete motion path and vendor executor limits | L0 | `docs/INTEGRATION_CONTRACT.md`; `docs/proposals/SYSTEM_TELEOP_INTAKE.md` |
@@ -64,6 +64,9 @@ hardware.
 | The mock gateway covers lease, submit, unknown, busy, unavailable and stop; no motion retry | L2 | `tests/test_mock_gateway.py`; `tests/test_session.py` |
 | 2/5/6-DoF profiles run through the same core | L1 | `tests/test_profile.py`; `evidence/20261126_m1_core/profiles.txt` |
 | The same script produces a byte-identical trace | L1/L2 | `tests/test_runner_determinism.py`; `cli_trace_sha256.txt` |
+| Capture provenance is immutable; mock/simulation cannot be relabelled hardware; `replay` is not a new capture | L1 | `tests/test_capture.py`; `docs/DATA_COLLECTION.md` |
+| The recorder cannot block the tick loop or the stop path (bounded queue, observer isolation, stop on recorder fault) | L1/L2 | `tests/test_capture.py`; `core/runner.py` |
+| A sealed capture re-reads with matching hashes; tampering is detected | L1 | `tests/test_capture.py`; `capture/verify.py` |
 | No device, vendor topic, motion call, model weight or recording exists in the tree | L0 | `tests/test_no_hardware.py`; gate |
 
 ## 4. Not verified
@@ -74,7 +77,8 @@ hardware.
 | System teleoperation intake and streaming session | Intake + ROS subscriber merged for mock only; `TeleopState` absent | No production consumer |
 | Simulation bridge and multi-robot teleoperation | Test-only bridge; ArmPi, Gate-2 and PiPER X mock L3 proven on domain 42 + 43 | No hardware or canonical PiPER X profile |
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
-| Episode capture, replay, quality and LeRobot export | Not implemented (M3–M4) | No demonstration data |
+| Episode capture | Capture core implemented (M3 slice 1, mock CLI): provenance gate, non-blocking writer, seal and verify, 20 tests; observations, media, hardware/simulation sessions and the 30-episode drill open | No demonstration dataset yet |
+| Offline replay, quality evaluation and LeRobot export | Not implemented (M4) | No replay/export evidence |
 | Studio teleoperation panel | Not implemented (M5) | Operator cannot observe a live session |
 | Leader-arm and hardware teleoperation | Not implemented (M6); vendor executor cannot stream multi-joint | No hardware claim; no e-stop |
 | Independent M1 code review | Round 1 REJECT; Round 2 APPROVE WITH CHANGES; final re-review pending | M1 acceptance is not final |

@@ -167,11 +167,14 @@ class TeleopBinding:
     gripper: GripperBinding | None = None
     schema: str = "jcheng.teleop.binding.v1"
     source: str = ""
+    binding_hash: str = ""
 
     def __post_init__(self) -> None:
         if not self.profile_id or not self.source_id:
             raise ProfileError("binding profile_id and source_id are required")
         _require_sha256(self.profile_hash, "binding profile_hash")
+        if self.binding_hash:
+            _require_sha256(self.binding_hash, "binding_hash")
         inputs = [binding.input_index for binding in self.joints]
         if len(inputs) != len(set(inputs)):
             raise ProfileError("binding input indices must be unique")
@@ -360,6 +363,7 @@ def load_binding(path: str | Path) -> TeleopBinding:
         modes=modes,
         gripper=gripper,
         source=str(path),
+        binding_hash=_hash_payload(raw),
     )
 
 

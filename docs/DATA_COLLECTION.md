@@ -1,9 +1,26 @@
 # Data collection and provenance — jcheng-teleop
 
-> Status: **Proposed** as of 2026-11-26; to be frozen at M3.
-> No recorder exists. No capture, dataset or model weight is stored in this
-> repository. The learning dataset contract is owned by `jcheng-learning` and
-> is not yet frozen; this document records the negotiation boundary.
+> Status: **Partially implemented (M3 slice 1)** as of 2026-11-26.
+> `src/jcheng_teleop/capture/` implements the capture package, provenance gate,
+> non-blocking writer and seal/verify for the mock CLI path. Observation rows,
+> media, hardware/simulation sessions and the 30-episode acceptance remain
+> open. No capture, dataset or model weight is stored in this repository. The
+> learning dataset contract is owned by `jcheng-learning` and is not yet
+> frozen; this document records the negotiation boundary.
+
+### Implementation status (2026-11-26)
+
+| Area | State |
+|---|---|
+| `jcheng.teleop.capture.v1` manifest + five JSONL streams | Implemented for `input`/`action`/`command`/`events`; `observation` is an empty file on the mock path |
+| Provenance gate (environment/source/authorization/truth label) | Implemented; `replay` is rejected as a new capture |
+| Non-blocking writer, bounded queue, drop order | Implemented; stop intent, gateway results and fault events are priority rows |
+| Seal (`manifest.json`, `SHA256SUMS`) and re-read verification | Implemented; tamper detection covered by tests |
+| Recorder fault handling | Storage error marks the capture faulted; the runner stops the session with `recorder_fault` |
+| Media, camera references, `README.txt` | Not implemented |
+| Hardware / simulation capture session | Not implemented; only the mock CLI |
+| Session-close event | Not recorded (CLI summary only) |
+| 30 × 60 s valid capture, disk-full drill | Not met |
 
 ## 1. Ownership boundary
 

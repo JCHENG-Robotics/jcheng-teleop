@@ -8,6 +8,18 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M3 capture core in `src/jcheng_teleop/capture/`: `jcheng.teleop.capture.v1`
+  provenance metadata and validation, an append-only non-blocking JSONL writer
+  with a bounded queue and priority rows, an `EpisodeRecorder` for the
+  input/action/command/event streams, and a read-only seal/verify path
+  (`manifest.json`, `SHA256SUMS`, tamper detection). Lease ids are hashed.
+- `TeleopRunner.observer`: recorder/tracing hook isolated from the control
+  loop; an observer exception is counted, `False` requests a system stop.
+- CLI `--record DATA_ROOT`, `--capture-id` and `--task`; CLI captures are
+  `environment_class=mock`, `source_class=scripted`, and the capture root must
+  be outside a git worktree.
+- `tests/test_capture.py` (20 tests) and `evidence/20261126_m3_capture/`.
+
 - M2 ROS 2 publisher `ros2_ws/src/jcheng_teleop_ros` and its Humble build
   evidence. The publisher takes an operator-supplied lease id and never mints
   one.
