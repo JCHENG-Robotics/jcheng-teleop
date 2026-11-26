@@ -10,9 +10,9 @@
 | Item | Fact |
 |---|---|
 | `LICENSE` file | none |
-| Code in v0.1.0 | documentation, tests and a shell gate; no runtime code |
-| Runtime dependencies | none in v0.1.0 |
-| Test dependencies | `pytest` (MIT), `PyYAML` (MIT) — CI only |
+| Code in v0.3.0 | Python package (ROS-free core, adapters, CLI), tests and a shell gate; no third-party code copied |
+| Runtime dependencies | `PyYAML` (MIT) |
+| Test dependencies | `pytest` (MIT), `PyYAML` (MIT) |
 | Operator input adapter | outside the repository and not distributed here |
 | Recordings | outside the repository; each carries its own license |
 | Vendor code or assets | none copied |

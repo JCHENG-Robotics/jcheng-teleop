@@ -1,0 +1,2 @@
+7d79cfbcd277ef0f7c9d87f790eb10feea477e6743d13bade2d8eecba1c0c9c2  evidence/20261126_m1_core/cli_trace_1.jsonl
+7d79cfbcd277ef0f7c9d87f790eb10feea477e6743d13bade2d8eecba1c0c9c2  evidence/20261126_m1_core/cli_trace_2.jsonl

@@ -115,7 +115,7 @@ def test_no_model_weights_or_recordings():
 
 
 def test_no_data_or_session_store_directories():
-    for name in ("datasets", "models", "recordings", "sessions"):
+    for name in ("datasets", "models", "recordings", "sessions", "captures", "episodes"):
         directory = ROOT / name
         if directory.is_dir():
             files = [p for p in directory.rglob("*") if p.is_file()]
@@ -124,7 +124,14 @@ def test_no_data_or_session_store_directories():
 
 def test_gitignore_covers_data_and_weights():
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8")
-    for pattern in ("datasets/", "models/", "recordings/", "sessions/"):
+    for pattern in (
+        "datasets/",
+        "models/",
+        "recordings/",
+        "sessions/",
+        "captures/",
+        "episodes/",
+    ):
         assert pattern in ignored, f".gitignore missing {pattern}"
     for pattern in ("*.pt", "*.onnx", "*.engine", "*.bag", "*.mcap"):
         assert pattern in ignored, f".gitignore missing {pattern}"
