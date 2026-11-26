@@ -103,3 +103,11 @@ blocker list; it is evidence for the paperwork, not for motion.
 
 Unattended motion, e-stop claims, Cartesian teleoperation, force feedback,
 self-collision avoidance, industrial certification, PiPER X hardware.
+
+## 7. Related proposals
+
+- `TeleopCommand` v0.2: [TELEOP_COMMAND_V0.2.md](proposals/TELEOP_COMMAND_V0.2.md)
+- System streaming executor (B2):
+  [`jcheng-system/docs/proposals/STREAMING-EXECUTOR.md`](https://github.com/JCHENG-Robotics/jcheng-system/blob/main/docs/proposals/STREAMING-EXECUTOR.md)
+- Stop-confirmation levels (R5/B9):
+  [`stop-confirmation-levels.md`](https://github.com/JCHENG-Robotics/jcheng-interfaces/blob/main/docs/proposals/stop-confirmation-levels.md)
