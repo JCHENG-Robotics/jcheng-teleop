@@ -260,6 +260,13 @@ Quality metrics for evaluation (not a safety certification):
 
 ## 8. Dataset adapter and LeRobot mapping
 
+M7 adds a **teleop-local mixed-source index** (`jcheng.teleop.dataset.v1`,
+`export/mixed.py`) and correction provenance
+(`corrected_from_capture_id`/`corrected_from_tick_id`/`policy_action_seq`). The
+index verifies sealed captures, keeps per-episode environment/source labels,
+groups by source class and resolves correction references; it is not the
+learning dataset and never writes one. See [M7_PLAN.md](M7_PLAN.md).
+
 The learning-owned proposal is `jcheng.dataset.v1` with
 `action.kind: joint_position_absolute` in its M1 scope. The current
 `TeleopCommand` v0.1 wire carries velocity only and has no gripper field, so a

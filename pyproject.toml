@@ -16,6 +16,7 @@ test = ["pytest>=7.4"]
 jcheng-teleop = "jcheng_teleop.cli:main"
 jcheng-teleop-replay = "jcheng_teleop.replay.cli:main"
 jcheng-teleop-preflight = "jcheng_teleop.supervised.cli:main"
+jcheng-teleop-index = "jcheng_teleop.export.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -8,6 +8,15 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M7 offline data side: correction provenance on captures
+  (`corrected_from_capture_id`, `corrected_from_tick_id`,
+  `policy_action_seq`, with `policy_id/version`; only `human_correction`) and a
+  teleop-local mixed-source index `jcheng.teleop.dataset.v1`
+  (`src/jcheng_teleop/export/mixed.py`) plus the `jcheng-teleop-index` CLI.
+  The index keeps per-episode environment/source labels, groups by source
+  class, verifies capture hashes and resolves correction references; it never
+  writes a learning dataset. `tests/test_mixed_dataset.py` (12 tests);
+  `docs/M7_PLAN.md`; `evidence/20261126_m7_mixed/`. No training or rollout.
 - M6 supervised-session prerequisites in `src/jcheng_teleop/supervised/`:
   `jcheng.teleop.authorization.v1` (operator, supervisor, authorization ref,
   workspace checklist, profile/contract hashes, exact joint order, scope,

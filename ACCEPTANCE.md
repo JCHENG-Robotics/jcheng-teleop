@@ -73,6 +73,8 @@ hardware.
 | A benchmark export is one row per motion action with unique ids, and only a hardware capture maps to `data_source: recorded` | L1 | `tests/test_replay.py`; `export/benchmark.py` |
 | A supervised authorization must name different operator/supervisor, a clear workspace, exact profile joint order, a valid scope/velocity, matching profile/contract hashes and an unexpired timezone-aware window | L1 | `tests/test_supervised.py`; `supervised/authorization.py` |
 | Preflight never reports `hardware_ready: true`; it lists the streaming, wire, stop-confirmation, e-stop and profile blockers | L1 | `tests/test_supervised.py`; `supervised/preflight.py` |
+| A correction episode requires policy identity, a prior capture and a policy action sequence; other source classes cannot carry correction fields | L1 | `tests/test_mixed_dataset.py`; `capture/provenance.py` |
+| A mixed-source index keeps per-episode environment/source labels, groups by source class, verifies capture hashes and resolves correction references | L1 | `tests/test_mixed_dataset.py`; `export/mixed.py` |
 | 30 × 60 s mock captures are valid with complete provenance and 0 label violations | L1 | `tools/capture_acceptance_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | A storage write failure faults the recorder, sends a stop and stops the session; no tick is blocked | L1 | `tools/disk_full_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | No device, vendor topic, motion call, model weight or recording exists in the tree | L0 | `tests/test_no_hardware.py`; gate |
@@ -87,8 +89,9 @@ hardware.
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
 | Episode capture | Capture core implemented (M3): provenance gate, non-blocking writer, seal/verify, 26 tests, mock CLI recording, ROS-harness observation rows from the system telemetry tap, a 30 × 60 s mock acceptance set and a storage-fault drill; media, a simulation/hardware episode set and cross-stream time sync open | No demonstration dataset yet |
 | Offline replay | Input replay + command wire-projection replay implemented (M4): recorded mock/simulation captures replay with 0 divergences; anomaly scan, basic quality metrics and benchmark JSONL export landed. LeRobot export blocked on the learning contract | No export dataset yet |
-| Studio teleoperation panel | Read-only status API implemented (M5): `jcheng.teleop.status.v1` over loopback with staleness/degraded semantics, profile/contract/lease-ref and capture counters. Studio panel and stop wiring open | Operator panel not connected yet |
+| Studio teleoperation panel | Read-only status API implemented (M5): `jcheng.teleop.status.v1` over loopback with staleness/degraded semantics, profile/contract/lease-ref and capture counters. The studio panel + opt-in system stop are in `jcheng-studio` (`evidence/20261126_teleop_panel/`) | Panel browser E2E not run |
 | Leader-arm and hardware teleoperation | Offline M6 prerequisites implemented: `jcheng.teleop.authorization.v1` and `jcheng-teleop-preflight` validate a per-session authorization against profile/contract and report blockers. Hardware blocked: vendor executor cannot stream multi-joint, wire v0.2 missing, stop confirmation missing | No hardware claim; no e-stop |
+| Hybrid demonstration/policy data | Offline M7 data side implemented: correction provenance and a mixed-source index that keeps per-episode labels. Training, policy rollout, takeover and evaluation blocked | No policy, no training, no multi-source episode set |
 | Independent M1 code review | Round 1 REJECT; Round 2 APPROVE WITH CHANGES; final re-review pending | M1 acceptance is not final |
 | Hardware behavior | No authorization, no session | No L5 evidence |
 

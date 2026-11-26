@@ -74,6 +74,11 @@ class CaptureMetadata:
     generator_config_hash: str | None = None
     policy_id: str | None = None
     policy_version: str | None = None
+    # M7 correction provenance: a correction episode references the policy
+    # capture/tick and the policy action sequence it corrects.
+    corrected_from_capture_id: str | None = None
+    corrected_from_tick_id: int | None = None
+    policy_action_seq: int | None = None
     profile_source: str = "fixture"
     has_gripper: bool = False
     clock_id: str = "host_mono"
@@ -162,6 +167,31 @@ class CaptureMetadata:
         if self.source_class in {"policy_execution", "human_correction"}:
             _required(self.policy_id, "policy_id (policy execution/correction)")
             _required(self.policy_version, "policy_version (policy execution/correction)")
+        if self.source_class == "human_correction":
+            _required(
+                self.corrected_from_capture_id,
+                "corrected_from_capture_id (human correction)",
+            )
+            _require(
+                bool(_CAPTURE_ID.match(self.corrected_from_capture_id or "")),
+                "corrected_from_capture_id must be a safe capture id",
+            )
+            _require(
+                self.policy_action_seq is not None,
+                "policy_action_seq (human correction)",
+            )
+            if self.corrected_from_tick_id is not None:
+                _require(
+                    self.corrected_from_tick_id >= 0,
+                    "corrected_from_tick_id must be non-negative",
+                )
+        else:
+            _require(
+                self.corrected_from_capture_id is None
+                and self.corrected_from_tick_id is None
+                and self.policy_action_seq is None,
+                "correction reference is only valid for human_correction",
+            )
         return self
 
     def to_manifest(
@@ -236,6 +266,11 @@ class CaptureMetadata:
                 "policy_version": self.policy_version,
                 "checkpoint_hash": None,
                 "action_chunk": None,
+            },
+            "correction": {
+                "corrected_from_capture_id": self.corrected_from_capture_id,
+                "corrected_from_tick_id": self.corrected_from_tick_id,
+                "policy_action_seq": self.policy_action_seq,
             },
             "time": {
                 "clock_source": self.clock_source,

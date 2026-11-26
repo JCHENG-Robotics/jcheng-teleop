@@ -18,7 +18,8 @@
 > has a loopback-only read-only teleop status API; the studio panel and its
 > opt-in system stop live in `jcheng-studio`. M6 is In progress at the offline
 > authorization/preflight stage; hardware streaming and stop confirmation are
-> missing. There
+> missing. M7 has the offline data side: correction provenance and a
+> mixed-source index; training and rollout are blocked. There
 > is still no input device access, no lease adapter and no production gateway
 > client. The physical operator input adapter is outside this repository;
 > device-free input sources and mappings are in-repo. Nothing here is used by
