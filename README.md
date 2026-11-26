@@ -19,7 +19,9 @@
 > opt-in system stop live in `jcheng-studio`. M6 is In progress at the offline
 > authorization/preflight stage; hardware streaming and stop confirmation are
 > missing. M7 has the offline data side: correction provenance and a
-> mixed-source index; training and rollout are blocked. There
+> mixed-source index; training and rollout are blocked. The M2 ROS publisher is
+> test-only, so `capability.yaml` stays `offline` with an empty runtime until
+> the `intent_source` class is approved ([M2 closeout](docs/M2_CLOSEOUT.md)). There
 > is still no input device access, no lease adapter and no production gateway
 > client. The physical operator input adapter is outside this repository;
 > device-free input sources and mappings are in-repo. Nothing here is used by

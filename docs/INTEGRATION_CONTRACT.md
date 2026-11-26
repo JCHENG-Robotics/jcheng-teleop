@@ -404,21 +404,23 @@ Rules:
 |---|---|---|---|
 | P-001 | `TeleopCommand` v0.2: joint position, gripper, session/episode, profile hash, source class, mode-conditional payload | `jcheng-interfaces` | Proposed; no file changed |
 | P-002 | System teleop intake, streaming session, deadman/seq/stamp/clipping, `TeleopState` | `jcheng-system` (+ interfaces for codes/state) | Intake + ROS subscriber merged (PR #20); `TeleopState` still proposed |
-| P-003 | Robot profile v2 or an approved overlay for CAN/prismatic arms; teleop binding | `jcheng-interfaces` | Proposed; `docs/proposals/piper-x-robot-profile.md` exists untracked, no file changed |
+| P-003 | Robot profile v2 or an approved overlay for CAN/prismatic arms; teleop binding | `jcheng-interfaces` | Proposed; `docs/proposals/piper-x-robot-profile.md` is committed, no schema/hash change |
 | P-004 | Dataset/episode contract `jcheng.dataset.v1` and teleop producer rules | `jcheng-learning` → interfaces | Proposed; learning M1 package untracked |
-| P-005 | Studio teleop status/stop surface | `jcheng-studio` + teleop local | Proposed; M5 |
+| P-005 | Studio teleop status/stop surface | `jcheng-studio` + teleop local | Implemented in studio v0.8.0 (status proxy + opt-in system stop) |
+| P-006 | `capability-manifest` class `intent_source` for a bounded intent publisher without motion authority | `jcheng-interfaces` | Proposed; no schema change |
 
 Links:
 
 - [TeleopCommand v0.2 proposal](proposals/TELEOP_COMMAND_V0.2.md)
 - [System teleop intake proposal](proposals/SYSTEM_TELEOP_INTAKE.md)
+- [Capability `intent_source` proposal](https://github.com/JCHENG-Robotics/jcheng-interfaces/blob/main/docs/proposals/capability-intent-source.md)
 
 ## 13. Blockers
 
 | ID | Blocker | Impact | Resolution |
 |---|---|---|---|
-| B0 | `.github` teleop admission is on an unmerged branch; `origin/main` still says "planned" | Governance admission not final | Merge the admission branch before M1 |
-| B1 | System intake/ROS subscriber are merged, but the teleop ROS publisher and the simulation bridge/L3 evidence exist only on branches | M2 canonical path still incomplete | Merge the teleop and system sim-bridge branches |
+| B0 | Resolved: `.github` admitted teleop and the taxonomy entry now reflects v0.3.0 / M2–M7; the `intent_source` class is a separate proposal (P-006) | Governance admission final | — |
+| B1 | System intake/ROS subscriber are merged; the teleop publisher and the M5/M6/M7 work are pushed on `docs/m0-architecture`, but the PR is not merged | M2 canonical path still incomplete | Merge the teleop branch |
 | B2 | Vendor executor is single-joint step at ~5/s | M6 hardware streaming impossible | New privileged servo/executor design |
 | B3 | `TeleopCommand` lacks position/gripper/session/provenance | Leader-follower and dataset actions blocked | P-001 |
 | B4 | Gate-2 and PiPER X simulation-only core profiles exist; `robot-profile.v1` still cannot express a CAN/prismatic arm canonically | PiPER X hardware profile blocked | P-003 / profile v2 |
@@ -433,6 +435,7 @@ Links:
 | B13 | Domain 42 has no publisher authentication or DDS Security; `source` is self-declared and a lease id is bearer authority | A malicious/misconfigured L3 node could reuse a lease | Bind lease holder to a registered capability or add DDS Security; until then treat domain 42 as a trusted, isolated bus with an owner and no untrusted nodes |
 | B14 | Learning's dataset `source_class` is dataset-level and currently forbids mixing; teleop M7 wants multiple source classes | Mixed-source export is not implementable as written | Split datasets per source_class or add per-episode provenance to learning's contract |
 | B15 | Velocity-only episodes cannot satisfy learning's `joint_position_absolute` action kind | M4 LeRobot round-trip is untestable for velocity teleop | Use v0.2 position mode or add a velocity action kind; mark M4 partial until then |
+| B16 | `capability-manifest.v1` has no class for a bounded intent publisher; teleop stays `offline` with an empty runtime while `ros2_ws/` ships a test-only domain-42 publisher | Manifest and shipped transport do not fully align | P-006 `intent_source` class; until approved, the publisher is explicitly test-only and undeployed |
 
 ## 14. Related
 

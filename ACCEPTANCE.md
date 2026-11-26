@@ -49,7 +49,7 @@ hardware.
 
 | Claim | Level | Evidence |
 |---|---|---|
-| The repository is an L3 capability with `hardware_access: none` and `safety.class: offline`; the manifest still declares an empty runtime surface until the M2 capability PR merges | L0 | `capability.yaml`; `tests/test_contract.py` |
+| The repository is an L3 capability with `hardware_access: none` and `safety.class: offline`; the manifest keeps an empty runtime because the `ros2_ws/` publisher is test-only and the `intent_source` class is not approved | L0 | `capability.yaml`; `tests/test_contract.py`; [docs/M2_CLOSEOUT.md](docs/M2_CLOSEOUT.md) |
 | The M0 document set, links and full M0–M9 roadmap exist | L0 | gate; `tests/test_contract.py` |
 | The nine module responsibilities, dependencies, interfaces and lifecycles are recorded | L0 | `docs/ARCHITECTURE.md`; `docs/TELEOP_CORE.md` |
 | The ecosystem audit identifies the missing system consumer, discrete motion path and vendor executor limits | L0 | `docs/INTEGRATION_CONTRACT.md`; `docs/proposals/SYSTEM_TELEOP_INTAKE.md` |

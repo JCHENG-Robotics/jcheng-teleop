@@ -8,6 +8,11 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M2 closeout record (`docs/M2_CLOSEOUT.md`): the test-only ROS publisher is
+  not claimed as a capability runtime; `capability.yaml` stays `offline` with
+  an empty runtime until the `intent_source` class proposal is approved. The
+  `.github` taxonomy entry and the integration blockers (B0/B16, P-006) are
+  updated to match.
 - M7 offline data side: correction provenance on captures
   (`corrected_from_capture_id`, `corrected_from_tick_id`,
   `policy_action_seq`, with `policy_id/version`; only `human_correction`) and a
