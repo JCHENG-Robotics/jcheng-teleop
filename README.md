@@ -14,7 +14,9 @@
 > media, hardware sessions and the 30-episode acceptance are not implemented.
 > M4 has started: input replay, command wire-projection replay, anomaly scan,
 > quality metrics and benchmark JSONL export run offline over recorded
-> captures; LeRobot export is blocked on the learning dataset contract. There
+> captures; LeRobot export is blocked on the learning dataset contract. M5 has
+> started: a loopback-only read-only teleop status API exists for the studio
+> panel; the panel and stop wiring are not implemented. There
 > is still no input device access, no lease adapter and no production gateway
 > client. The physical operator input adapter is outside this repository;
 > device-free input sources and mappings are in-repo. Nothing here is used by

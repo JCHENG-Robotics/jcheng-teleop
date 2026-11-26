@@ -8,6 +8,12 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M5 read-only teleop status API: `jcheng.teleop.status.v1` over a
+  loopback-only `GET /v1/status` server in the ROS demo harness
+  (`status_port` parameter; disabled by default). Reports phase, input age and
+  stale flag, deadman, mode, profile/contract hashes, hashed lease ref, wire
+  seq and capture counters. No lease, intent, stop or motion endpoint.
+  `docs/STATUS_API.md`; `tests/test_status.py` (6 tests).
 - M4 offline replay in `src/jcheng_teleop/replay/`: verified capture reader,
   input replay against a fresh conditioner/mapper, a pure anomaly scan, quality
   metrics, and the `jcheng-teleop-replay` CLI (exit 0 clean, 1

@@ -85,7 +85,7 @@ hardware.
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
 | Episode capture | Capture core implemented (M3): provenance gate, non-blocking writer, seal/verify, 26 tests, mock CLI recording, ROS-harness observation rows from the system telemetry tap, a 30 × 60 s mock acceptance set and a storage-fault drill; media, a simulation/hardware episode set and cross-stream time sync open | No demonstration dataset yet |
 | Offline replay | Input replay + command wire-projection replay implemented (M4): recorded mock/simulation captures replay with 0 divergences; anomaly scan, basic quality metrics and benchmark JSONL export landed. LeRobot export blocked on the learning contract | No export dataset yet |
-| Studio teleoperation panel | Not implemented (M5) | Operator cannot observe a live session |
+| Studio teleoperation panel | Read-only status API implemented (M5): `jcheng.teleop.status.v1` over loopback with staleness/degraded semantics, profile/contract/lease-ref and capture counters. Studio panel and stop wiring open | Operator panel not connected yet |
 | Leader-arm and hardware teleoperation | Not implemented (M6); vendor executor cannot stream multi-joint | No hardware claim; no e-stop |
 | Independent M1 code review | Round 1 REJECT; Round 2 APPROVE WITH CHANGES; final re-review pending | M1 acceptance is not final |
 | Hardware behavior | No authorization, no session | No L5 evidence |

@@ -20,6 +20,6 @@ jcheng-teleop-replay = "jcheng_teleop.replay.cli:main"
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "ros2_ws/src/jcheng_teleop_ros"]
 testpaths = ["tests"]
 addopts = "-q"

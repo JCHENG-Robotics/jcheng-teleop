@@ -28,11 +28,19 @@ from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 from jcheng_teleop import __version__
 from jcheng_teleop.adapters.input.virtual import VirtualInputSource
-from jcheng_teleop.capture import CaptureMetadata, EpisodeRecorder, ObservationSample
+from jcheng_teleop.capture import (
+    CaptureMetadata,
+    EpisodeRecorder,
+    ObservationSample,
+    lease_reference,
+)
 from jcheng_teleop.core.conditioning import Conditioner
 from jcheng_teleop.core.mapper import ActionMapper
 from jcheng_teleop.core.model import InputSample, Mode, Severity
 from jcheng_teleop.core.profile import load_binding, load_profile, resolve_profile
+
+from .status import status_payload
+from .status_server import StatusServer
 
 CONTRACT_HASH = "sha256:0b8d72ced7f54d444d6851d8b99a51a78e2bed3f687324f51a15f76557f24b42"
 
@@ -84,6 +92,7 @@ class TeleopPublisher(Node):
         self.declare_parameter("simulator_repo", "")
         self.declare_parameter("simulator_version", "")
         self.declare_parameter("state_topic", "/jcheng/telemetry/state")
+        self.declare_parameter("status_port", 0)
 
         profile_path = str(self.get_parameter("profile").value or "")
         binding_path = str(self.get_parameter("binding").value or "")
@@ -107,6 +116,13 @@ class TeleopPublisher(Node):
         self._last_seq = -1
         self._last_source_ns = 0
         self._state_errors = 0
+        self._last_publish_mono_ns: int | None = None
+        self._last_mode: str | None = None
+        self._last_deadman: bool | None = None
+        self._last_sample_seq: int | None = None
+        self._last_sample_source_ns: int | None = None
+        self._last_source_id: str | None = None
+        self._status_server = None
 
         qos = QoSProfile(
             depth=1,
@@ -126,6 +142,13 @@ class TeleopPublisher(Node):
                 f"capture enabled: {self.recorder.writer.path} "
                 f"env={self.recorder.metadata.environment_class} "
                 f"state_topic={self.state_topic}"
+            )
+        status_port = int(self.get_parameter("status_port").value or 0)
+        if status_port > 0:
+            self._status_server = StatusServer(self._status_snapshot, port=status_port)
+            self._status_server.start()
+            self.get_logger().info(
+                f"read-only status: http://127.0.0.1:{self._status_server.port}/v1/status"
             )
         self.create_timer(1.0 / self.rate_hz, self._tick)
         self.get_logger().info(
@@ -236,6 +259,50 @@ class TeleopPublisher(Node):
         if intent is not None:
             self.recorder.record_action(intent, now_ns, tick_id=tick)
 
+    def _status_snapshot(self):
+        now_ns = time.monotonic_ns()
+        if self.recorder is not None and self.recorder.faulted:
+            phase = "faulted"
+        elif self._last_publish_mono_ns is None:
+            phase = "starting"
+        elif self._stopped:
+            phase = "completed"
+        else:
+            phase = "running"
+        age_ms = (
+            None
+            if self._last_publish_mono_ns is None
+            else (now_ns - self._last_publish_mono_ns) / 1_000_000.0
+        )
+        if self.recorder is None:
+            capture = {"enabled": False}
+        else:
+            capture = {
+                "enabled": True,
+                "capture_id": self.recorder.metadata.capture_id,
+                "environment_class": self.recorder.metadata.environment_class,
+                "rows_written": dict(self.recorder.writer.written),
+                "rejected_observations": self.recorder.rejected_observations,
+                "fault": self.recorder.fault,
+            }
+        return status_payload(
+            teleop_version=__version__,
+            contract_hash=self._contract_hash(),
+            profile_id=self.profile.profile_id,
+            profile_hash=self.profile.profile_hash,
+            lease_ref=lease_reference(self.lease_id),
+            phase=phase,
+            last_wire_seq=self._last_seq,
+            mode=self._last_mode,
+            source_id=self._last_source_id,
+            sample_seq=self._last_sample_seq,
+            sample_t_source_ns=self._last_sample_source_ns,
+            deadman=self._last_deadman,
+            input_age_ms=age_ms,
+            capture=capture,
+            now_mono_ns=now_ns,
+        )
+
     def _publish(self, intent, *, seq: int, sample=None) -> None:
         message = TeleopCommand()
         message.header.stamp = self.get_clock().now().to_msg()
@@ -248,6 +315,13 @@ class TeleopPublisher(Node):
         message.deadman = bool(intent.deadman)
         self.publisher.publish(message)
         self._last_seq = int(seq)
+        if sample is not None:
+            self._last_mode = sample.mode.value
+            self._last_deadman = bool(sample.deadman)
+            self._last_sample_seq = int(sample.seq)
+            self._last_sample_source_ns = int(sample.t_source_ns)
+            self._last_source_id = sample.source_id
+            self._last_publish_mono_ns = time.monotonic_ns()
         self._capture_tick(sample, intent, time.monotonic_ns())
 
     def _neutral_frame(self) -> InputSample:
@@ -293,6 +367,9 @@ class TeleopPublisher(Node):
 
     def close(self) -> None:
         self.source_reader.close()
+        if self._status_server is not None:
+            self._status_server.stop()
+            self._status_server = None
         if self.recorder is None:
             return
         self.recorder.record_event(

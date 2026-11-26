@@ -373,6 +373,12 @@ Rules:
 - M5 needs a teleop status surface (session, lease, deadman, input age,
   profile/contract hash, capture state) and a stop control that reaches the
   system stop path.
+- Teleop implements the read-only half: `jcheng.teleop.status.v1` on a
+  loopback-only `GET /v1/status` server ([STATUS_API.md](STATUS_API.md)). The
+  panel polls it; a missing/stale sample renders as degraded. The status API
+  has no lease, intent, stop or motion endpoint.
+- Stop stays a system action: studio's backend calls the system stop path with
+  the operator token, not the teleop status server.
 - The browser never calls the gateway directly; studio's backend proxies with
   the token.
 - A browser gamepad is an operator-side input source behind the sample
