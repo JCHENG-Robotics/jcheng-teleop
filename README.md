@@ -5,8 +5,8 @@
 > M0 design is approved. The M1 ROS-free core and CLI are implemented and
 > covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
 > In progress: the mock system intake/ROS subscriber and the teleop ROS publisher have
-> landed; an ArmPi test-only simulation bridge, L3 probe and Humble build are in
-> place. Multi-robot and canonical domain-42 deployment remain pending. There is still no ROS node, no DDS
+> landed; ArmPi and Gate-2 test-only simulation L3 probes, the system bridge and Humble
+> builds are in place. PiPER X and canonical domain-42 deployment remain pending. There is still no ROS node, no DDS
 > domain, no input device access, no published intent and no motion. The
 > physical operator input adapter is outside this repository; device-free input
 > sources and mappings are in-repo. Nothing here is used by the running robot.
