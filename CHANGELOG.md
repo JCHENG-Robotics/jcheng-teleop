@@ -14,6 +14,9 @@ All notable changes to this project are documented here. Format based on
 - ArmPi test-only simulation L3 evidence is recorded in `jcheng-system`
   (`e2e/reports/20261126_teleop_sim/`); a Jazzy/Humble build record is in
   `evidence/20261126_m2_ros/`.
+- Gate-2 canonical domain-42 L3: runtime/teleop on 42, simulation bridge in a
+  separate domain-43 context; both joints moved to about ±0.125 rad. Evidence
+  is in `jcheng-system/e2e/reports/20261126_teleop_domain42/`.
 
 
 ## [0.3.0] — 2026-11-26

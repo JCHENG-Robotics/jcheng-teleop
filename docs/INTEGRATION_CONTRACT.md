@@ -416,7 +416,7 @@ Links:
 | B2 | Vendor executor is single-joint step at ~5/s | M6 hardware streaming impossible | New privileged servo/executor design |
 | B3 | `TeleopCommand` lacks position/gripper/session/provenance | Leader-follower and dataset actions blocked | P-001 |
 | B4 | Gate-2 core + L3 profile added; `robot-profile.v1` still cannot express PiPER X CAN/prismatic arms | PiPER X profile blocked | P-003 / profile v2 |
-| B5 | Test-only ArmPi + Gate-2 sim bridge/L3 probes landed; no PiPER X or canonical domain-42 sim path | M2 full PiPER X/domain42 evidence blocked | Merge and add profile v2/domain bridge |
+| B5 | ArmPi + Gate-2 test-only sim bridge/L3 landed; Gate-2 canonical domain-42 runtime + domain-43 bridge split proven | ArmPi canonical split and PiPER X pending | Extend profile v2 and ArmPi split |
 | B6 | Learning's `jcheng.dataset.v1` and writer are untracked in a 0.2.0 working tree, not merged/frozen | M3/M4 export blocked | P-004 + merge/freeze the learning contract |
 | B7 | No measured state at teleop rate; `/joint_states` is a command cache | Capture truth and position mapping limited | Domain bridge or bus-read telemetry |
 | B8 | Preemption returns `LEASE_EXPIRED`; lease events not exposed | Operator cannot distinguish preemption | System fix or documented mapping |
