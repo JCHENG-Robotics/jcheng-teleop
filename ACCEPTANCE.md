@@ -1,8 +1,8 @@
 # Acceptance report — jcheng-teleop
 
 > Status: **pass** as of 2026-11-26 for the M0 design and the M1 ROS-free core
-> (L1 / in-process L2). Version 0.3.0. The M0 design and M1 commit/tag are
-> operator-authorized. M1 is not hardware evidence; M2+ remains unverified.
+> (L1 / in-process L2). Version 0.3.0, commit `ca5584b`, tag `v0.3.0`.
+> M1 is not hardware evidence; M2+ remains unverified.
 > Operator: JerichoCheng approved the M0 design on 2026-11-26. Reviewer:
 > independent design review Round 1 REJECT; Round 2 APPROVE WITH CHANGES, no
 > blockers. M1 code review is recorded separately.
