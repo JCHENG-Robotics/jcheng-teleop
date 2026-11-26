@@ -1,0 +1,33 @@
+# Capability manifest for the organization's admission check.
+# jcheng-teleop is an L3 capability: operator input to teleoperation intent
+# (JCHENG-Robotics/.github docs/repo-taxonomy.md, layer L3).
+#
+# v0.1.0 is admission-only. It has no runtime node, publishes no intent and
+# opens no device. The empty runtime surface is deliberate: a planned
+# capability must not claim a topic it does not serve. `TeleopCommand.msg` is
+# already defined and reserved in jcheng-interfaces v0.1.0, but the stream is
+# enabled only at the first teleoperation pilot.
+#
+# At M2 the intent node publishes /jcheng/intent/teleop on domain 42 and this
+# file gains scopes, a motion_source class, the binding rate and deadman, all
+# through a contract-first PR.
+schema_version: 1
+name: jcheng-teleop
+version: 0.1.0
+contract:
+  interfaces: ">=0.1,<0.2"
+  contract_hash: "sha256:0b8d72ced7f54d444d6851d8b99a51a78e2bed3f687324f51a15f76557f24b42"
+  system_api: ">=0.1,<0.2"
+safety:
+  class: offline
+  scopes: []
+  # Required by capability-manifest.v1.schema.json. It is vacuous in v0.1.0
+  # because no intent is produced; it becomes binding at M2.
+  requires_lease: true
+  max_rate_hz: 1
+  deadman_ms: 500
+hardware_access: none
+runtime:
+  ros_domains: []
+  publishes: []
+  subscribes: []

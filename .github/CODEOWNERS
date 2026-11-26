@@ -1,0 +1,10 @@
+# Two-reviewer model (adopted 2026-11-23). Both maintainers can approve.
+* @JerichoCheng @JerichoSwaine
+
+# The admission manifest, the input rules and the intent boundary are the
+# safety-relevant surfaces of this repository.
+/capability.yaml  @JerichoCheng @JerichoSwaine
+/docs/            @JerichoCheng @JerichoSwaine
+/tests/           @JerichoCheng @JerichoSwaine
+/scripts/         @JerichoCheng @JerichoSwaine
+/.github/         @JerichoCheng @JerichoSwaine

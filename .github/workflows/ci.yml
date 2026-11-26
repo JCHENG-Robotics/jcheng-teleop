@@ -1,0 +1,26 @@
+name: teleop-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  teleop-gate:
+    name: teleop-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install test dependencies
+        shell: bash
+        run: python3 -m pip install --quiet 'pytest==8.3.4' 'PyYAML==6.0.2'
+      - name: Repository gate
+        shell: bash
+        run: bash scripts/check_repo_gate.sh

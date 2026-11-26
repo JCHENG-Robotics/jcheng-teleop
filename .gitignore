@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+install/
+log/
+*.egg-info/
+.venv/
+.DS_Store
+
+# Operator input recordings and session logs live outside the repository.
+recordings/
+sessions/
+datasets/
+models/
+*.pt
+*.onnx
+*.engine
+*_openvino_model/
+*.bag
+*.mcap
+*.db3
+*.mp4
+*.avi

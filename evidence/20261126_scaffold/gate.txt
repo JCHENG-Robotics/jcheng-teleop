@@ -1,0 +1,11 @@
+# jcheng-teleop repository gate — 2026-11-26
+# host: Linux 7.0.0-43-generic x86_64, python 3.12.3, pytest 7.4.4
+# command: bash scripts/check_repo_gate.sh
+
+== tests
+..............                                                           [100%]
+14 passed in 0.04s
+Repository gate OK: document set, manifest, no LICENSE, no secrets, no weights, no recordings, links resolve
+
+# extra check: capability.yaml against jcheng-interfaces capability-manifest.v1.schema.json
+capability.yaml validates against capability-manifest.v1.schema.json
