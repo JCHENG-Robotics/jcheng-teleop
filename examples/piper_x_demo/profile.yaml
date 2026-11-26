@@ -1,0 +1,17 @@
+# PiPER X — teleop demo profile, simulation-only.
+#
+# Mirrors jcheng-system/configs/robots/piper_x/profile.yaml (6 revolute joints,
+# no gripper, no servo ids). v1 robot-profile is bus-servo specific, so this is
+# not a hardware or canonical claim; it exists to drive the mock/Gazebo plant.
+schema: jcheng.teleop.profile.v1
+profile_id: piper_x_demo
+joints:
+  - {name: joint1, lower_rad: -2.6179938, upper_rad: 2.6179938, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+  - {name: joint2, lower_rad: 0.0, upper_rad: 3.1415926, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+  - {name: joint3, lower_rad: -2.9670597, upper_rad: 0.0, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+  - {name: joint4, lower_rad: -1.553343, upper_rad: 1.553343, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+  - {name: joint5, lower_rad: -1.553343, upper_rad: 1.553343, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+  - {name: joint6, lower_rad: -2.88, upper_rad: 2.88, max_velocity_rad_s: 1.5, max_acceleration_rad_s2: 1.0}
+workspace_frame: base_link
+tip_link: link6
+modes: [JOINT_VELOCITY]

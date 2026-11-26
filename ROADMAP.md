@@ -1,9 +1,10 @@
 # jcheng-teleop roadmap
 
 > Status: **v0.3.0** as of 2026-11-26. M0 design is approved. The M1 ROS-free
-> core and CLI are accepted at L1/in-process L2. M2 is In progress; it depends
-> on the system teleop intake and simulation bridge. No DDS/device/hardware
-> path exists in this repository yet. The full M0–M9 path is recorded here so that later
+> core and CLI are accepted at L1/in-process L2. M2 is In progress; the system
+> teleop intake, ROS runtime subscriber, teleop ROS publisher and test-only
+> simulation bridge exist. No device or hardware path exists in this
+> repository. The full M0–M9 path is recorded here so that later
 > milestones are not redesigned around today's mock-only system.
 
 ## Current state
@@ -14,7 +15,7 @@
 | M0 ecosystem audit, architecture, contract proposals | Complete (delivery/approved, 2026-11-26); Round 2 APPROVE WITH CHANGES; operator approved | `evidence/20261126_m0_design/`; [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Research and dependency review | Complete (2026-11-26) | [docs/DEPENDENCY_REVIEW.md](docs/DEPENDENCY_REVIEW.md) |
 | ROS-free teleop core, virtual/keyboard/JSONL/gamepad mapping, CLI | Complete (2026-11-26); L1/in-process L2 accepted | `evidence/20261126_m1_core/`; `tests/` |
-| System teleoperation intake and simulation teleoperation | In progress (M2); system intake/ROS subscriber merged; teleop ROS publisher landed; system test-only sim bridge + ArmPi/Gate-2 L3 probes + Gate-2 domain42 split landed on `feat/teleop-sim-bridge`; PiPER X pending | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
+| System teleoperation intake and simulation teleoperation | In progress (M2); system intake/ROS subscriber merged; teleop ROS publisher landed; system test-only sim bridge + ArmPi/Gate-2/PiPER X mock L3 (canonical domain 42 + domain-43 bridge) landed on `feat/teleop-sim-bridge`; PiPER X canonical profile pending | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
 | Episode capture, provenance and time sync | Planned (M3) | — |
 | Offline replay, quality evaluation and LeRobot export | Planned (M4) | — |
 | Studio teleoperation panel | Planned (M5) | — |
@@ -29,7 +30,7 @@
 |---|---|---|---|---|
 | M0 | Admission, architecture, contract and dependency review, M1 plan | Complete (approved 2026-11-26) | Document set, research record, proposals, gate and review pass; operator approved; commit/tag remains an explicit request | `evidence/20261126_m0_design/` |
 | M1 | ROS-free deterministic core, virtual/keyboard/JSONL/gamepad mapping, profile mapping, safety state machine, in-process mock gateway | Complete (2026-11-26); L1/in-process L2 accepted | 111 tests pass; no DDS, device, recording or hardware | `evidence/20261126_m1_core/` |
-| M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher + ArmPi/Gate-2 L3 + Gate-2 domain42 split + Humble build; PiPER X pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
+| M2 | System mock + simulation teleoperation across robot profiles | In progress (system intake + ROS subscriber + teleop publisher + ArmPi/Gate-2/PiPER X mock L3 on canonical domain 42 + Humble build; PiPER X canonical profile pending) | Lease/deadman/preemption/stop proven end-to-end in mock and simulation; no hardware | `jcheng-system` `tests/test_teleop.py`; `docs/TELEOP-INTAKE.md` |
 | M3 | Episode capture, time synchronization, provenance and quality gate | Planned | 30 complete episodes, 0 simulation-as-hardware labels, recorder cannot block stop | — |
 | M4 | Offline replay, anomaly detection and LeRobot v3 export | Planned | Byte-identical replay; benchmark scores; LeRobot round-trip equality | — |
 | M5 | Studio teleoperation panel and session UX | Planned | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | — |

@@ -17,6 +17,12 @@ All notable changes to this project are documented here. Format based on
 - Gate-2 canonical domain-42 L3: runtime/teleop on 42, simulation bridge in a
   separate domain-43 context; both joints moved to about ±0.125 rad. Evidence
   is in `jcheng-system/e2e/reports/20261126_teleop_domain42/`.
+- `examples/piper_x_demo/` (profile + identity binding, six revolute joints,
+  no gripper): simulation-only, mirrors the non-canonical system profile.
+- ArmPi canonical domain-42 L3 (joint1 0 -> 0.2375 rad) and PiPER X six-joint
+  mock L3 (±0.1379 rad per joint), both runtime 42 + bridge 43, in
+  `jcheng-system/e2e/reports/20261126_teleop_domain42_armpi/` and
+  `..._piperx_mock/`.
 
 
 ## [0.3.0] — 2026-11-26

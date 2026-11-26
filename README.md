@@ -4,12 +4,14 @@
 > Status: **Experimental** as of 2026-11-26. Version 0.3.0.
 > M0 design is approved. The M1 ROS-free core and CLI are implemented and
 > covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
-> In progress: the mock system intake/ROS subscriber and the teleop ROS publisher have
-> landed; ArmPi + Gate-2 test-only simulation L3 probes, the Gate-2 canonical domain-42
-> runtime/bridge split and Humble builds are in place. PiPER X remains pending. There is still no ROS node, no DDS
-> domain, no input device access, no published intent and no motion. The
-> physical operator input adapter is outside this repository; device-free input
-> sources and mappings are in-repo. Nothing here is used by the running robot.
+> In progress: the mock system intake/ROS subscriber and the teleop ROS
+> publisher have landed; ArmPi, Gate-2 and PiPER X mock L3 run through the
+> canonical domain-42 runtime with a domain-43 simulation bridge, and Humble
+> builds pass. PiPER X is simulation-only: no CAN profile, driver bridge or
+> hardware path exists. There is still no input device access, no lease
+> adapter and no production gateway client. The physical operator input
+> adapter is outside this repository; device-free input sources and mappings
+> are in-repo. Nothing here is used by the running robot.
 >
 > English canonical; the Chinese README is a translation.
 
@@ -34,21 +36,21 @@ calls `ExecuteMotion` and never sends a servo or motor command.
 |---|---|
 | Layer | L3 capability (`capability.yaml`) |
 | Inputs | Normalized input samples from a device-free source (virtual/keyboard/JSONL/gamepad mapping) or an operator-side adapter (M1 onward); read-only robot, safety and lease state from the system layer (M2 onward) |
-| Outputs | Bounded action intent to an in-process mock gateway (M1); `TeleopCommand` on the planned `/jcheng/intent/teleop` stream, domain 42 (M2 onward); capture packages outside git (M3 onward). Nothing leaves the process in v0.3.0 |
+| Outputs | Bounded action intent to an in-process mock gateway (M1); reserved `TeleopCommand` on `/jcheng/intent/teleop` from the test-only ROS publisher, domain 42 (M2, branch); capture packages outside git (M3 onward). The core package alone leaves nothing |
 | Motion authority | None. The system gateway, lease, arbiter and safety supervisor remain authoritative |
 | Hardware access | `none` (`capability.yaml`); no robot device and no operator input device is opened here |
 | Owned devices | None. A physical gamepad, keyboard, wheel, pendant or leader arm is operator-side and outside the capability boundary. M1 provides device-free mapping and tests; the OS device driver stays operator-side. |
 | Forbidden | Robot device access, vendor topics, `/move_action`, `/cmd_vel`, `ExecuteMotion`, hardware commands, fabricated state, simulation data labelled as hardware |
-| Runtime in v0.3.0 | Local CLI only: no DDS domain, no ROS node, no publisher, no subscriber, no service, no device |
+| Runtime in v0.3.0 | Core package: local CLI only, no DDS domain, node, publisher or device. `ros2_ws`: test-only M2 intent publisher on domain 42 with an operator-supplied lease; no subscriber, no service, no device |
 
-The current `jcheng-system` has **no teleoperation consumer**. Its gateway and
-motion arbiter accept discrete `MotionCommand` requests; the reserved
-`TeleopCommand` stream is not subscribed anywhere. M2 therefore depends on a
-system-side teleoperation intake and streaming servo path, proposed in
+`jcheng-system` now has the mock/system-core teleop intake (`TeleopIntake`) and
+a ROS runtime subscriber to `/jcheng/intent/teleop` (PR #20), plus a test-only
+simulation bridge. There is **no production teleoperation consumer** yet: no
+gateway lease adapter, no operator-console lease flow and no `TeleopState`
+surface, so M2 remains in progress. The intake is mock/simulation only and the
+vendor executor cannot stream multi-joint motion. The interface proposal is in
 [docs/INTEGRATION_CONTRACT.md](docs/INTEGRATION_CONTRACT.md) and
 [docs/proposals/SYSTEM_TELEOP_INTAKE.md](docs/proposals/SYSTEM_TELEOP_INTAKE.md).
-Publishing the reserved topic without that consumer would be inert and is not
-claimed.
 
 ## Repository layout
 
@@ -69,6 +71,7 @@ jcheng-teleop/
 ├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 intent publisher
 ├── examples/armpi_ultra_demo/      # ArmPi demo profile + binding
 ├── examples/gate2_arm_demo/        # Gate-2 demo profile + binding
+├── examples/piper_x_demo/          # PiPER X simulation-only profile + binding
 ├── tests/                          # unit, in-process L2 and static boundary tests
 ├── scripts/check_repo_gate.sh      # repository gate (local and CI)
 ├── evidence/                       # L0/L1/L2 evidence records

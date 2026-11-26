@@ -397,8 +397,8 @@ Rules:
 | ID | Proposal | Owner | Status |
 |---|---|---|---|
 | P-001 | `TeleopCommand` v0.2: joint position, gripper, session/episode, profile hash, source class, mode-conditional payload | `jcheng-interfaces` | Proposed; no file changed |
-| P-002 | System teleop intake, streaming session, deadman/seq/stamp/clipping, `TeleopState` | `jcheng-system` (+ interfaces for codes/state) | Proposed; no file changed |
-| P-003 | Robot profile v2 or an approved overlay for CAN/prismatic arms; teleop binding | `jcheng-interfaces` | Proposed; PiPER X v2 proposal is untracked |
+| P-002 | System teleop intake, streaming session, deadman/seq/stamp/clipping, `TeleopState` | `jcheng-system` (+ interfaces for codes/state) | Intake + ROS subscriber merged (PR #20); `TeleopState` still proposed |
+| P-003 | Robot profile v2 or an approved overlay for CAN/prismatic arms; teleop binding | `jcheng-interfaces` | Proposed; `docs/proposals/piper-x-robot-profile.md` exists untracked, no file changed |
 | P-004 | Dataset/episode contract `jcheng.dataset.v1` and teleop producer rules | `jcheng-learning` → interfaces | Proposed; learning M1 package untracked |
 | P-005 | Studio teleop status/stop surface | `jcheng-studio` + teleop local | Proposed; M5 |
 
@@ -412,11 +412,11 @@ Links:
 | ID | Blocker | Impact | Resolution |
 |---|---|---|---|
 | B0 | `.github` teleop admission is on an unmerged branch; `origin/main` still says "planned" | Governance admission not final | Merge the admission branch before M1 |
-| B1 | System intake/ROS subscriber and teleop ROS publisher exist only on branches; simulation bridge and end-to-end L3 missing | M2 canonical path still incomplete | Merge both branches and implement the sim bridge/L3 evidence |
+| B1 | System intake/ROS subscriber are merged, but the teleop ROS publisher and the simulation bridge/L3 evidence exist only on branches | M2 canonical path still incomplete | Merge the teleop and system sim-bridge branches |
 | B2 | Vendor executor is single-joint step at ~5/s | M6 hardware streaming impossible | New privileged servo/executor design |
 | B3 | `TeleopCommand` lacks position/gripper/session/provenance | Leader-follower and dataset actions blocked | P-001 |
-| B4 | Gate-2 core + L3 profile added; `robot-profile.v1` still cannot express PiPER X CAN/prismatic arms | PiPER X profile blocked | P-003 / profile v2 |
-| B5 | ArmPi + Gate-2 test-only sim bridge/L3 landed; Gate-2 canonical domain-42 runtime + domain-43 bridge split proven | ArmPi canonical split and PiPER X pending | Extend profile v2 and ArmPi split |
+| B4 | Gate-2 and PiPER X simulation-only core profiles exist; `robot-profile.v1` still cannot express a CAN/prismatic arm canonically | PiPER X hardware profile blocked | P-003 / profile v2 |
+| B5 | ArmPi, Gate-2 and PiPER X mock L3 are proven on canonical domain 42 + domain-43 bridge; PiPER X is velocity-only and has no gripper or CAN path | PiPER X hardware teleoperation pending | Extend profile v2 and build the driver bridge behind `ExecuteMotion` |
 | B6 | Learning's `jcheng.dataset.v1` and writer are untracked in a 0.2.0 working tree, not merged/frozen | M3/M4 export blocked | P-004 + merge/freeze the learning contract |
 | B7 | No measured state at teleop rate; `/joint_states` is a command cache | Capture truth and position mapping limited | Domain bridge or bus-read telemetry |
 | B8 | Preemption returns `LEASE_EXPIRED`; lease events not exposed | Operator cannot distinguish preemption | System fix or documented mapping |

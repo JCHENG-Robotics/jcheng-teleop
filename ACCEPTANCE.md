@@ -7,8 +7,9 @@
 > independent design review Round 1 REJECT; Round 2 APPROVE WITH CHANGES, no
 > blockers. M1 code review is recorded separately.
 > Scope: M0 architecture and M1 core. The M1 result is not hardware evidence;
-> M2+ and all robot behavior remain unverified. There is no ROS node, DDS
-> domain, input device, capture or hardware session. No motion command reaches
+> M2+ and all robot behavior remain unverified. M2 has a test-only ROS
+> publisher and simulation L3 (ArmPi, Gate-2, PiPER X mock) but no input
+> device, capture, deployment or hardware session. No motion command reaches
 > a robot.
 > M0 reviewed content: `sha256:f8f6281d4b7e9168cd9d24d4716da668f3928309be821d8e7fe90b6a65f85e6c`
 > on branch `docs/m0-architecture`; no commit or tag was created (operator
@@ -69,9 +70,9 @@ hardware.
 
 | Item | Reason | Risk |
 |---|---|---|
-| ROS 2 Humble node, DDS QoS and lease handshake | Not implemented (M2) | No deployed intent path |
-| System teleoperation intake and streaming session | Proposal only | M2 canonical path is blocked |
-| Simulation bridge and multi-robot teleoperation | Not implemented | M2 simulation path is blocked |
+| ROS 2 Humble node, DDS QoS and lease handshake | Publisher and Humble build exist (M2); no lease handshake from teleop, no deployment | No deployed intent path |
+| System teleoperation intake and streaming session | Intake + ROS subscriber merged for mock only; `TeleopState` absent | No production consumer |
+| Simulation bridge and multi-robot teleoperation | Test-only bridge; ArmPi, Gate-2 and PiPER X mock L3 proven on domain 42 + 43 | No hardware or canonical PiPER X profile |
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
 | Episode capture, replay, quality and LeRobot export | Not implemented (M3–M4) | No demonstration data |
 | Studio teleoperation panel | Not implemented (M5) | Operator cannot observe a live session |
@@ -92,8 +93,11 @@ hardware.
 - The 50 Hz / 300 ms values are local design bounds; they are not a physical
   stop guarantee. The platform has no e-stop, brake, encoder or self-collision
   model.
-- The system has no teleoperation consumer; publishing `TeleopCommand` today
-  would be inert. M2 is a cross-repository proposal.
+- The system has a mock-only teleop intake and a test-only simulation bridge;
+  there is no production consumer, no gateway lease adapter and no
+  `TeleopState`. M2 is a cross-repository effort.
+- PiPER X is simulation-only: `robot-profile.v1` cannot express a CAN arm and
+  no CAN read has established whether vendor feedback is a measurement.
 - The vendor executor accepts one-joint `JOINT_STEP` at about 5 commands/s;
   M6 hardware streaming is blocked.
 - `jcheng.dataset.v1` and its writer are an untracked learning working tree,
