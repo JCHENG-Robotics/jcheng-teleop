@@ -4,8 +4,8 @@
 > Status: **Experimental** as of 2026-11-26. Version 0.3.0.
 > M0 design is approved. The M1 ROS-free core and CLI are implemented and
 > covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
-> In progress: the mock system-core teleop intake has landed on a
-> `jcheng-system` branch; the ROS subscriber and simulation bridge are pending. There is still no ROS node, no DDS
+> In progress: the mock system intake/ROS subscriber and the teleop ROS publisher have
+> landed; the simulation bridge and end-to-end L3 evidence are pending. There is still no ROS node, no DDS
 > domain, no input device access, no published intent and no motion. The
 > physical operator input adapter is outside this repository; device-free input
 > sources and mappings are in-repo. Nothing here is used by the running robot.
@@ -65,6 +65,7 @@ jcheng-teleop/
 │   ├── M1_PLAN.md                  # M1 work packages, tree, test matrix, blockers
 │   └── proposals/                  # contract-first proposals; no interface is changed
 ├── src/jcheng_teleop/              # ROS-free core, adapters, CLI
+├── ros2_ws/src/jcheng_teleop_ros/  # M2 ROS 2 intent publisher
 ├── examples/armpi_ultra_demo/      # demo profile + binding
 ├── tests/                          # unit, in-process L2 and static boundary tests
 ├── scripts/check_repo_gate.sh      # repository gate (local and CI)
@@ -80,8 +81,9 @@ jcheng-teleop/
 
 - Python 3.10 or newer (CI uses 3.12), `PyYAML` 6.0+ at runtime, `pytest` 7.4+
   for tests. CI pins `pytest==8.3.4` and `PyYAML==6.0.2`.
-- No ROS installation is required for M1. ROS 2 Humble is required only when
-  the intent node exists (M2), and it is tested in a `ros:humble` container.
+- No ROS installation is required for M1. ROS 2 Humble is required for the M2
+  publisher (`ros2_ws/src/jcheng_teleop_ros`), which must be validated in a
+  `ros:humble` container.
 - No input device and no robot are required. A physical adapter is
   operator-side; this repository consumes normalized samples, not devices.
 - Capture packages and datasets stay outside the repository, under an
@@ -109,7 +111,8 @@ against an in-process mock gateway. Neither touches a robot or opens a device.
 |---|---|---|
 | M0 document set, links, manifest and static no-device scan pass | Verified (L0/L1, 2026-11-26) | `evidence/20261126_m0_design/`; `tests/` |
 | M1 ROS-free core: conditioning, mapping, deadman, session, mock gateway | Partially verified (L1, 2026-11-26; M1 acceptance pending) | `evidence/20261126_m1_core/`; `tests/` |
-| M1 deterministic trace and no-device boundary | Partially verified (L1/L2 in-process, 2026-11-26; acceptance pending) | `evidence/20261126_m1_core/`; `tests/test_runner_determinism.py` |
+| M1 deterministic trace and no-device boundary | Partially verified (L1/L2 in-process, 2026-11-26; acceptance pending) |
+| M2 ROS 2 intent publisher (mock) | Partially verified (build + smoke, 2026-11-26; no end-to-end sim) | `ros2_ws/src/jcheng_teleop_ros/README.md` | `evidence/20261126_m1_core/`; `tests/test_runner_determinism.py` |
 | Ecosystem audit and cross-repository contract gaps are recorded | Verified (L0, 2026-11-26) | [docs/INTEGRATION_CONTRACT.md](docs/INTEGRATION_CONTRACT.md); [docs/DEPENDENCY_REVIEW.md](docs/DEPENDENCY_REVIEW.md) |
 | Input conditioning, mapping, sessions and deadman behavior | Partially verified (L1, 2026-11-26; acceptance pending) | `tests/test_conditioning.py`, `test_deadman.py`, `test_session.py` |
 | Intent publication, lease gating and preemption | Unverified | Not implemented (M2); system consumer absent |

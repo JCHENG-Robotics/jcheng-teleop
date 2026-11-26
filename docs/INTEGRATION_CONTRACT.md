@@ -27,7 +27,7 @@ The audit did not modify any repository. The only writes are in
 | Peer | Version | Current fact | Teleop dependency |
 |---|---|---|---|
 | `jcheng-interfaces` | 0.1.0, tag `33f1293`, hash `sha256:0b8d72…24b42` | `TeleopCommand.msg` reserved; no dataset/episode schema; no teleop error codes | Read-only for M1; v0.2 proposal for position/gripper (M2/M6) |
-| `jcheng-system` | `0.3.0-dev0` | Mock system-core `TeleopIntake` landed on branch `feat/teleop-intake`; no ROS subscriber/gateway integration yet; vendor executor still single-joint step | M2 ROS/sim bridge and M6 prerequisite |
+| `jcheng-system` | `0.3.0-dev0` | Mock `TeleopIntake` + `/jcheng/intent/teleop` ROS subscriber on branch `feat/teleop-intake`; teleop ROS publisher in this repo; sim bridge/merge missing; vendor executor still single-joint step | M2 sim bridge/L3, merge, and M6 prerequisite |
 | `jcheng-simulation` | 0.1.0 | Domain 43; mock `JointState` or Gazebo JTC; no system bridge | M2 test bridge |
 | `jcheng-learning` | 0.1.0 committed; 0.2.0 only in the working tree | `jcheng.dataset.v1` and a writer are untracked; not merged or frozen | M3/M4 contract freeze and merge |
 | `jcheng-studio` | 0.7.0 | Gateway `/v1` client and `/v1/ws/state`; no teleop UI | M5 status/stop surface |
@@ -40,8 +40,10 @@ reconcile it before a runtime claim.
 
 ## 3. Current system reality
 
-The audit found no `TeleopCommand` subscriber and no `teleop` string in
-`jcheng-system`. The implemented motion path is:
+The M0 audit found no `TeleopCommand` subscriber in `jcheng-system`. A mock
+`TeleopIntake` and a `/jcheng/intent/teleop` subscriber now exist on branch
+`feat/teleop-intake`; they are not merged and the simulation bridge is absent.
+The implemented discrete motion path is:
 
 ```text
 HTTP POST /v1/motion/execute ─┐
@@ -410,11 +412,11 @@ Links:
 | ID | Blocker | Impact | Resolution |
 |---|---|---|---|
 | B0 | `.github` teleop admission is on an unmerged branch; `origin/main` still says "planned" | Governance admission not final | Merge the admission branch before M1 |
-| B1 | No ROS system teleop consumer yet; the mock system-core `TeleopIntake` exists only on `feat/teleop-intake` | M2 canonical path still incomplete | Merge/implement the ROS subscriber and sim bridge |
+| B1 | System intake/ROS subscriber and teleop ROS publisher exist only on branches; simulation bridge and end-to-end L3 missing | M2 canonical path still incomplete | Merge both branches and implement the sim bridge/L3 evidence |
 | B2 | Vendor executor is single-joint step at ~5/s | M6 hardware streaming impossible | New privileged servo/executor design |
 | B3 | `TeleopCommand` lacks position/gripper/session/provenance | Leader-follower and dataset actions blocked | P-001 |
 | B4 | `robot-profile.v1` cannot express CAN/prismatic arms; PiPER X proposal untracked | Multi-robot profile blocked | P-003 |
-| B5 | No system-simulation bridge; no testkit sim scenario | M2 Gazebo path blocked | SIM-M2 |
+| B5 | No system-simulation bridge; no testkit sim scenario | M2 simulation/L3 blocked | SIM-M2 |
 | B6 | Learning's `jcheng.dataset.v1` and writer are untracked in a 0.2.0 working tree, not merged/frozen | M3/M4 export blocked | P-004 + merge/freeze the learning contract |
 | B7 | No measured state at teleop rate; `/joint_states` is a command cache | Capture truth and position mapping limited | Domain bridge or bus-read telemetry |
 | B8 | Preemption returns `LEASE_EXPIRED`; lease events not exposed | Operator cannot distinguish preemption | System fix or documented mapping |
