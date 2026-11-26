@@ -13,8 +13,10 @@ import sys
 from typing import Sequence
 
 from ..core.profile import load_binding, load_profile, resolve_profile
+from ..export import write_benchmark
 from .anomaly import scan_streams
 from .capture_reader import ReplayError, read_capture
+from .metrics import compute_metrics
 from .replay import replay_capture
 
 
@@ -28,6 +30,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--profile", required=True, help="teleop profile YAML")
     parser.add_argument("--binding", required=True, help="teleop binding YAML")
     parser.add_argument("--max-divergences", type=int, default=20)
+    parser.add_argument(
+        "--benchmark-out",
+        help="write a benchmark JSONL dataset (outside any git worktree)",
+    )
     return parser
 
 
@@ -73,10 +79,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     replay_report = replay_capture(capture, resolved)
     anomaly_report = scan_streams(capture.streams, capture.environment_class)
+    metrics = compute_metrics(capture.streams, capture.manifest)
     payload = {
         "capture_id": capture.capture_id,
         "environment_class": capture.environment_class,
         "replay": replay_report.to_dict(),
+        "metrics": metrics,
         "anomalies": {
             "status": anomaly_report.status,
             "errors": anomaly_report.errors,
@@ -84,6 +92,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "metrics": anomaly_report.metrics,
         },
     }
+    if args.benchmark_out:
+        try:
+            payload["benchmark"] = write_benchmark(
+                capture.streams, capture.manifest, args.benchmark_out
+            )
+        except (OSError, ValueError) as exc:
+            print(json.dumps({"error": f"benchmark export failed: {exc}"}, sort_keys=True))
+            return 2
     divergences = payload["replay"]["divergences"]
     if len(divergences) > args.max_divergences:
         payload["replay"]["divergences"] = divergences[: args.max_divergences]

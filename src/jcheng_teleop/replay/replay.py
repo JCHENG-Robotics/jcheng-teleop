@@ -57,6 +57,9 @@ class ReplayReport:
     stop_skipped: int = 0
     missing_input: int = 0
     rejected: int = 0
+    commands_recorded: int = 0
+    commands_compared: int = 0
+    commands_without_payload: int = 0
     defects: list[str] = field(default_factory=list)
     divergences: list[Divergence] = field(default_factory=list)
 
@@ -73,6 +76,9 @@ class ReplayReport:
             "stop_skipped": self.stop_skipped,
             "missing_input": self.missing_input,
             "rejected": self.rejected,
+            "commands_recorded": self.commands_recorded,
+            "commands_compared": self.commands_compared,
+            "commands_without_payload": self.commands_without_payload,
             "defects": list(self.defects),
             "divergences": [item.to_dict() for item in self.divergences],
             "status": "ok" if self.ok else "diverged",
@@ -154,7 +160,67 @@ def replay_streams(
                         derived=derived.get(name),
                     )
                 )
+    _replay_commands(streams, report)
     return report
+
+
+_COMMAND_FIELDS = (
+    "mode",
+    "purpose",
+    "deadman",
+    "t_source_ns",
+    "joint_positions_rad",
+    "joint_velocities_rad_s",
+    "gripper_normalized",
+    "gripper_valid",
+    "frame_id",
+    "profile_id",
+    "profile_hash",
+)
+
+
+def _replay_commands(
+    streams: dict[str, list[dict[str, Any]]], report: ReplayReport
+) -> None:
+    """Compare each recorded command payload with its action at the same tick.
+
+    This is the wire projection check: the session may assign a wire seq and a
+    lease id, but it must not change the action payload. It does not re-run a
+    gateway.
+    """
+    actions = {row.get("tick_id"): row for row in streams.get("action", [])}
+    for row in streams.get("command", []):
+        report.commands_recorded += 1
+        payload = row.get("payload")
+        if not isinstance(payload, dict):
+            report.commands_without_payload += 1
+            continue
+        tick = row.get("tick_id")
+        action = actions.get(tick)
+        if action is None:
+            report.defects.append(f"command tick {tick} has no action row")
+            continue
+        report.commands_compared += 1
+        for name in _COMMAND_FIELDS:
+            if not _equal(action.get(name), payload.get(name)):
+                report.divergences.append(
+                    Divergence(
+                        tick_id=int(tick),
+                        field=f"command.{name}",
+                        recorded=payload.get(name),
+                        derived=action.get(name),
+                    )
+                )
+        seq = payload.get("seq")
+        if not isinstance(seq, int) or seq < 0:
+            report.defects.append(f"command tick {tick}: invalid wire seq {seq!r}")
+        lease_ref = payload.get("lease_ref")
+        if lease_ref is not None and not (
+            isinstance(lease_ref, str)
+            and lease_ref.startswith("sha256:")
+            and len(lease_ref) == 71
+        ):
+            report.defects.append(f"command tick {tick}: lease_ref is not a sha256 hash")
 
 
 def replay_capture(capture: CaptureData, resolved: ResolvedProfile) -> ReplayReport:

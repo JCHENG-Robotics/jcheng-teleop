@@ -148,10 +148,12 @@ and applied values after clamping, and the limit events.
 ### 4.3 `command.jsonl`
 
 The wire command actually sent (or the transport error), the lease reference
-(hashed, not the raw id), the gateway result and the latency. When the system
-reports an applied target or a measured post-state, it is recorded as
+(hashed, not the raw id), the gateway result and the submitted `payload`
+(mode, purpose, seq, deadman, vectors, gripper, profile hashes). When the
+system reports an applied target or a measured post-state, it is recorded as
 `applied` with the system's `truth`/`verification` label; teleop never invents
-an applied value. It never records a token or raw credential.
+an applied value. It never records a token or raw credential. Latency is not
+recorded yet.
 
 ### 4.4 `observation.jsonl`
 
@@ -305,8 +307,10 @@ clock, so a replay cannot accidentally connect to a live system.
 | Mode | Input | What is compared | State |
 |---|---|---|---|
 | Input replay | `input.jsonl` | Recorded action intent vs re-derived action intent (fresh conditioner + mapper) | Implemented (`jcheng_teleop/replay/`) |
-| Command replay | Recorded action intent | Recorded wire command vs re-derived wire command | Not implemented: `command.jsonl` does not record the submitted payload |
-| Episode replay | All rows | Timing, events, limits, stop path and provenance | Partially: schema/tick/time/label scan implemented; limit/stop-latency metrics are not |
+| Command replay | Recorded `command.payload` | Wire projection: recorded payload vs its action row; seq/lease are session-assigned and are format-checked only | Implemented; no gateway is re-run |
+| Episode replay | All rows | Timing, events, limits, stop path and provenance | Partially: schema/tick/time/label scan and basic metrics implemented; limit/stop-latency bounds are not |
+| Benchmark export | Motion actions | One row per action with `sample_id`, `speed_rad_s`, `deadman`, `limit_event`, `zero_command` | Implemented (`jcheng_teleop/export/benchmark.py`); `data_source` maps hardware→`recorded`, simulation→`synthetic`, mock→`mock` |
+| LeRobot v3 export | Capture + learning contract | Dataset round-trip | Blocked on `jcheng.dataset.v1` and the absolute-position action gap |
 
 `jcheng-teleop-replay` exits 0 on a clean replay, 1 on a divergence or anomaly
 error, and 2 on a verification or profile-hash mismatch. A capture that fails

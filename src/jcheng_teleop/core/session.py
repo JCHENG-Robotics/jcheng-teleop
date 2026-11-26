@@ -80,6 +80,7 @@ class TeleopSession:
         self.last_conditioned = None
         self.last_intent: ActionIntent | None = None
         self.last_stop_intent: ActionIntent | None = None
+        self.last_submitted_intent: ActionIntent | None = None
         self._conditioned_seq: int | None = None
         self._conditioned_source_ns: int | None = None
         self._wire_seq = 0
@@ -212,6 +213,7 @@ class TeleopSession:
     def tick(self, now_ns: int | None = None) -> TickResult:
         now = self.clock.now_ns() if now_ns is None else int(now_ns)
         self.last_stop_intent = None
+        self.last_submitted_intent = None
         events = list(self._pending_events)
         self._pending_events.clear()
         previous_tick = self._last_tick_ns
@@ -348,6 +350,7 @@ class TeleopSession:
             return TickResult(self.state, None, tuple(events), False, None, stop_sent)
 
         try:
+            self.last_submitted_intent = intent
             result = self.gateway.submit(intent)
         except GatewayError as exc:
             stop_sent, stop_events = self.stop("gateway_unavailable", system=True, now_ns=now)

@@ -78,6 +78,14 @@ class TeleopRunner:
                 if result.stop_intent is None and self.session.last_stop_intent is not None:
                     # Expose the stop intent sent by the session on this tick.
                     result = replace(result, stop_intent=self.session.last_stop_intent)
+                if (
+                    result.submitted_intent is None
+                    and self.session.last_submitted_intent is not None
+                ):
+                    # Expose the intent that was handed to the gateway.
+                    result = replace(
+                        result, submitted_intent=self.session.last_submitted_intent
+                    )
                 self.results.append(result)
                 if self.on_tick is not None:
                     self.on_tick(result)

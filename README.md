@@ -12,12 +12,13 @@
 > non-blocking writer, seal/verify) records mock CLI runs, and the ROS demo
 > harness records labelled observation rows from the system telemetry tap;
 > media, hardware sessions and the 30-episode acceptance are not implemented.
-> M4 has started: input replay and an anomaly scan run offline over recorded
-> captures; command replay, benchmark export and the LeRobot adapter are not
-> implemented. There is still no input device access, no lease adapter and no
-> production gateway client. The physical operator input adapter is outside
-> this repository; device-free input sources and mappings are in-repo. Nothing
-> here is used by the running robot.
+> M4 has started: input replay, command wire-projection replay, anomaly scan,
+> quality metrics and benchmark JSONL export run offline over recorded
+> captures; LeRobot export is blocked on the learning dataset contract. There
+> is still no input device access, no lease adapter and no production gateway
+> client. The physical operator input adapter is outside this repository;
+> device-free input sources and mappings are in-repo. Nothing here is used by
+> the running robot.
 >
 > English canonical; the Chinese README is a translation.
 

@@ -33,7 +33,7 @@ class CapturePathError(ValueError):
     pass
 
 
-def _assert_outside_git(path: Path) -> None:
+def assert_outside_git(path: Path) -> None:
     for parent in (path, *path.parents):
         if (parent / ".git").exists():
             raise CapturePathError(
@@ -67,7 +67,7 @@ class CaptureWriter:
             raise ValueError("queue_limit must be positive")
         self.root = Path(root).expanduser().resolve()
         self.capture_id = capture_id
-        _assert_outside_git(self.root)
+        assert_outside_git(self.root)
         self.path = self.root / capture_id
         if self.path.exists():
             raise CapturePathError(f"capture already exists: {self.path}")

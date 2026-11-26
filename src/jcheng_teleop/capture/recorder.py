@@ -202,7 +202,12 @@ class EpisodeRecorder:
         if result.gateway_result is not None:
             self.writer.record(
                 "command",
-                self._command_row(result.gateway_result, now_ns, tick),
+                self._command_row(
+                    result.gateway_result,
+                    now_ns,
+                    tick,
+                    submitted_intent=result.submitted_intent,
+                ),
                 priority=True,
             )
         for event in result.events:
@@ -254,7 +259,14 @@ class EpisodeRecorder:
         )
         return row
 
-    def _command_row(self, result: GatewayResult, now_ns: int, tick_id: int) -> dict[str, Any]:
+    def _command_row(
+        self,
+        result: GatewayResult,
+        now_ns: int,
+        tick_id: int,
+        *,
+        submitted_intent: ActionIntent | None = None,
+    ) -> dict[str, Any]:
         row = self._base(COMMAND_SCHEMA, now_ns, tick_id)
         row.update(
             {
@@ -266,6 +278,22 @@ class EpisodeRecorder:
                 "confirmed": result.confirmed,
             }
         )
+        if submitted_intent is not None:
+            row["payload"] = {
+                "mode": submitted_intent.mode.value,
+                "purpose": submitted_intent.purpose,
+                "deadman": bool(submitted_intent.deadman),
+                "seq": int(submitted_intent.seq),
+                "t_source_ns": int(submitted_intent.t_source_ns),
+                "joint_positions_rad": list(submitted_intent.joint_positions_rad),
+                "joint_velocities_rad_s": list(submitted_intent.joint_velocities_rad_s),
+                "gripper_normalized": submitted_intent.gripper_normalized,
+                "gripper_valid": bool(submitted_intent.gripper_valid),
+                "frame_id": submitted_intent.frame_id,
+                "profile_id": submitted_intent.profile_id,
+                "profile_hash": submitted_intent.profile_hash,
+                "lease_ref": lease_reference(submitted_intent.lease_id),
+            }
         return row
 
     def _event_row(self, event: TeleopEvent, now_ns: int, tick_id: int) -> dict[str, Any]:

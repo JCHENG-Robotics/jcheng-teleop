@@ -108,8 +108,79 @@ def test_replay_reproduces_recorded_actions(tmp_path: Path) -> None:
     assert report.ok, (report.defects, report.divergences)
     assert report.motion_compared > 0
     assert report.stop_skipped >= 1
+    assert report.commands_recorded > 0
+    assert report.commands_compared > 0
+    assert report.commands_without_payload == 0
     anomalies = scan_streams(capture.streams, capture.environment_class)
     assert anomalies.ok, anomalies.errors
+
+
+def test_command_payload_matches_the_action(tmp_path: Path) -> None:
+    root, capture_id = _record(tmp_path)
+    capture = read_capture(root, capture_id)
+    command = next(row for row in capture.streams["command"] if "payload" in row)
+    action = next(
+        row for row in capture.streams["action"] if row["tick_id"] == command["tick_id"]
+    )
+    assert command["payload"]["joint_velocities_rad_s"] == action["joint_velocities_rad_s"]
+    assert command["payload"]["mode"] == action["mode"]
+    assert command["payload"]["lease_ref"].startswith("sha256:")
+
+
+def test_tampered_command_payload_is_detected(tmp_path: Path) -> None:
+    root, capture_id = _record(tmp_path)
+    capture = read_capture(root, capture_id)
+    command = next(row for row in capture.streams["command"] if "payload" in row)
+    command["payload"]["joint_velocities_rad_s"][0] += 0.5
+    report = replay_streams(capture.streams, _resolved(), capture_id=capture_id)
+    assert not report.ok
+    assert any(item.field == "command.joint_velocities_rad_s" for item in report.divergences)
+
+
+def test_commands_without_payload_are_counted_not_invented(tmp_path: Path) -> None:
+    root, capture_id = _record(tmp_path)
+    capture = read_capture(root, capture_id)
+    for row in capture.streams["command"]:
+        row.pop("payload", None)
+    report = replay_streams(capture.streams, _resolved(), capture_id=capture_id)
+    assert report.commands_without_payload == report.commands_recorded
+    assert report.commands_compared == 0
+    assert report.ok
+
+
+def test_metrics_are_computed(tmp_path: Path) -> None:
+    from jcheng_teleop.replay.metrics import compute_metrics
+
+    root, capture_id = _record(tmp_path)
+    capture = read_capture(root, capture_id)
+    metrics = compute_metrics(capture.streams, capture.manifest)
+    assert metrics["rows"]["action"] > 0
+    assert metrics["jitter_ms"]["count"] > 0
+    assert metrics["stop_intents"] >= 1
+    assert 0.0 <= metrics["zero_motion_ratio"] <= 1.0
+
+
+def test_benchmark_export_maps_mock_to_mock(tmp_path: Path) -> None:
+    from jcheng_teleop.export import write_benchmark
+
+    root, capture_id = _record(tmp_path)
+    capture = read_capture(root, capture_id)
+    motion = [
+        row for row in capture.streams["action"] if row.get("purpose") != "stop"
+    ]
+    export = write_benchmark(capture.streams, capture.manifest, tmp_path / "bench.jsonl")
+    assert export["rows"] == len(motion)
+    assert export["data_source"] == "mock"
+    rows = [json.loads(line) for line in (tmp_path / "bench.jsonl").read_text().splitlines()]
+    assert len({row["sample_id"] for row in rows}) == len(rows)
+    assert all(row["data_source"] == "mock" for row in rows)
+
+
+def test_benchmark_export_refuses_a_path_inside_the_repository() -> None:
+    from jcheng_teleop.export import write_benchmark
+
+    with pytest.raises(ValueError, match="outside a git worktree"):
+        write_benchmark({}, {"environment": {"environment_class": "mock"}}, ROOT / "bench.jsonl")
 
 
 def test_replay_detects_a_tampered_action(tmp_path: Path) -> None:

@@ -9,11 +9,20 @@ All notable changes to this project are documented here. Format based on
 ### Added
 
 - M4 offline replay in `src/jcheng_teleop/replay/`: verified capture reader,
-  input replay against a fresh conditioner/mapper, a pure anomaly scan, and
-  the `jcheng-teleop-replay` CLI (exit 0 clean, 1 divergence/anomaly, 2
-  verification/profile mismatch). The package imports no rclpy, gateway,
-  socket or subprocess module. `tests/test_replay.py` (10 tests) and
-  `evidence/20261126_m4_replay/`.
+  input replay against a fresh conditioner/mapper, a pure anomaly scan, quality
+  metrics, and the `jcheng-teleop-replay` CLI (exit 0 clean, 1
+  divergence/anomaly, 2 verification/profile mismatch). The package imports no
+  rclpy, gateway, socket or subprocess module. `tests/test_replay.py` (16
+  tests) and `evidence/20261126_m4_replay/`.
+- `command.jsonl` records the submitted `payload` (wire projection), and
+  replay compares it with the action at the same tick; a payload-less capture
+  is counted, not invented. `TickResult.submitted_intent` exposes the intent
+  handed to the gateway.
+- Benchmark JSONL export (`src/jcheng_teleop/export/benchmark.py`) with one row
+  per motion action; `data_source` maps hardware→`recorded`,
+  simulation→`synthetic`, mock→`mock`; an in-repo output path is refused.
+  `jcheng-benchmark` `read_dataset` accepts the output and a mock suite passes
+  over it.
 - `TickResult.stop_intent`: the session exposes the mode-specific stop intent
   it sends, so a capture records the stop as an `action` row instead of only
   an event code.

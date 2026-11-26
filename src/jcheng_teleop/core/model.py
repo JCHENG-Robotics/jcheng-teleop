@@ -415,6 +415,8 @@ class TickResult:
     # of `to_dict()` (trace compatibility); the capture recorder reads it so a
     # stop is auditable instead of being inferred from an event code.
     stop_intent: ActionIntent | None = None
+    # The intent handed to the gateway on this tick, when a submit happened.
+    submitted_intent: ActionIntent | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
