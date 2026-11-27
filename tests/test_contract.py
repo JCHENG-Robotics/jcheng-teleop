@@ -156,3 +156,17 @@ def test_status_vocabulary():
     for name in ("README.md", "ROADMAP.md", "ACCEPTANCE.md"):
         text = (ROOT / name).read_text(encoding="utf-8")
         assert not re.search(r"\b(Done|Finished|WIP|TODO|TBD)\b", text), name
+
+
+def test_ros_publisher_default_hash_matches_manifest():
+    source = (
+        ROOT
+        / "ros2_ws"
+        / "src"
+        / "jcheng_teleop_ros"
+        / "jcheng_teleop_ros"
+        / "publisher.py"
+    ).read_text(encoding="utf-8")
+    match = re.search(r'^CONTRACT_HASH = "(sha256:[0-9a-f]{64})"$', source, re.MULTILINE)
+    assert match, "publisher CONTRACT_HASH default not found"
+    assert match.group(1) == MANIFEST["contract"]["contract_hash"]
