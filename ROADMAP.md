@@ -494,8 +494,8 @@ scope and contract; industrial claims wait for separate certification work.
 
 ## Dependencies
 
-- `jcheng-interfaces` `>=0.1,<0.2`; contract hash
-  `sha256:0b8d72ced7f54d444d6851d8b99a51a78e2bed3f687324f51a15f76557f24b42`.
+- `jcheng-interfaces` `>=0.2,<0.3`; contract hash
+  `sha256:afca22a42f7163e0351d185d5a8577b0b51f2f3da4b92278f161a4a7d2c35b1c`.
   A v0.2 change requires a new tag, a regenerated manifest and matching
   consumer updates.
 - `jcheng-system` gateway/lease/arbiter API `>=0.1,<0.2` as declared; the
