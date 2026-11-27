@@ -16,7 +16,6 @@ from enum import Enum
 class AuthorityError(ValueError):
     pass
 
-
 class AuthorityMode(str, Enum):
     STOPPED = "STOPPED"
     POLICY = "POLICY"

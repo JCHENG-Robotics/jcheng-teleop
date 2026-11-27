@@ -17,8 +17,9 @@ from ..core.profile import ResolvedProfile
 from .authorization import SupervisedAuthorization, SupervisedError
 
 HARDWARE_BLOCKERS = (
-    "system streaming executor missing: the vendor executor accepts one-joint "
-    "JOINT_STEP at about 5 commands/s and cannot stream a 5-joint loop (B2)",
+    "system streaming executor missing: jcheng_vendor serializes one joint per "
+    "JOINT_STEP; the vendor ServosPosition vector exists, but no privileged "
+    "bridge and no measured rate/interpolation (B2)",
     "TeleopCommand v0.2 (joint position, gripper, session/provenance) is not "
     "approved (P-001/B3)",
     "stop confirmation is open: StopResult has no confirmation field (R5/B9)",
