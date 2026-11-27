@@ -8,6 +8,13 @@ All notable changes to this project are documented here. Format based on
 
 ### Added
 
+- M8 offline authority model: `core/authority.py` with `STOPPED`/`POLICY`/
+  `OPERATOR`/`BLEND` modes, explicit weights summing to 1, low-confidence and
+  fault handover, takeover→correction linkage (policy action retained) and a
+  coverage report. `docs/M8_PLAN.md` records the transition table, the
+  pre-registered 100 ms/150 ms bounds and the audit rules.
+  `tests/test_authority.py` (12 tests); `evidence/20261127_m8_authority/`.
+  Model only: no policy, no timed trials, no motion.
 - M9 offline interface: `jcheng.teleop.base_intent.v1` and an offline guard
   (`core/base.py`) for bounded base intent — forward 0.25 m/s, lateral
   0.20 m/s, yaw 0.60 rad/s, 500 ms input age, 20 Hz, lease/deadman/sequence.

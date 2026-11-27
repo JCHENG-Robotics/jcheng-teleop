@@ -76,6 +76,7 @@ hardware.
 | A correction episode requires policy identity, a prior capture and a policy action sequence; other source classes cannot carry correction fields | L1 | `tests/test_mixed_dataset.py`; `capture/provenance.py` |
 | A mixed-source index keeps per-episode environment/source labels, groups by source class, verifies capture hashes and resolves correction references | L1 | `tests/test_mixed_dataset.py`; `export/mixed.py` |
 | A base intent is rejected without a lease/deadman, outside the mobile limits, over 20 Hz, stale or with a duplicate sequence; the guard publishes nothing | L1 | `tests/test_base_intent.py`; `core/base.py` |
+| Shared authority has one source or explicit blend weights, records a reason on every transition, hands over on low confidence/fault and keeps the policy action on a correction | L1 | `tests/test_authority.py`; `core/authority.py` |
 | 30 × 60 s mock captures are valid with complete provenance and 0 label violations | L1 | `tools/capture_acceptance_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | A storage write failure faults the recorder, sends a stop and stops the session; no tick is blocked | L1 | `tools/disk_full_drill.py`; `evidence/20261126_m3_capture/drills.txt` |
 | No device, vendor topic, motion call, model weight or recording exists in the tree | L0 | `tests/test_no_hardware.py`; gate |
@@ -94,6 +95,7 @@ hardware.
 | Leader-arm and hardware teleoperation | Offline M6 prerequisites implemented: `jcheng.teleop.authorization.v1` and `jcheng-teleop-preflight` validate a per-session authorization against profile/contract and report blockers. Hardware blocked: vendor executor cannot stream multi-joint, wire v0.2 missing, stop confirmation missing | No hardware claim; no e-stop |
 | Hybrid demonstration/policy data | Offline M7 data side implemented: correction provenance and a mixed-source index that keeps per-episode labels. Training, policy rollout, takeover and evaluation blocked | No policy, no training, no multi-source episode set |
 | Mobile manipulation teleoperation | Offline M9 interface: base-intent guard (limits/deadman/lease/rate) and the mobile-owns-`/cmd_vel` design. No base contract, mode arbitration, coordinated simulation or hardware base motion | No `/cmd_vel` from teleop; base stop unproven |
+| Shared autonomy and correction | Offline M8 model: explicit modes/blend, low-confidence/fault handover, takeover→correction linkage and coverage. Timed 20-trial takeover, capture emission and policy scenarios blocked | No runtime authority measurement |
 | Independent M1 code review | Round 1 REJECT; Round 2 APPROVE WITH CHANGES; final re-review pending | M1 acceptance is not final |
 | Hardware behavior | No authorization, no session | No L5 evidence |
 
