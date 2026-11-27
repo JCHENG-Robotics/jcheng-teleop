@@ -51,6 +51,11 @@ All notable changes to this project are documented here. Format based on
   stale flag, deadman, mode, profile/contract hashes, hashed lease ref, wire
   seq and capture counters. No lease, intent, stop or motion endpoint.
   `docs/STATUS_API.md`; `tests/test_status.py` (6 tests).
+- Status-only loopback entry point (`jcheng_teleop_status`): serves the same
+  `jcheng.teleop.status.v1` endpoint with a truthful idle sample
+  (`phase=starting`, no input, stale). It imports no ROS, publishes no intent
+  and has no stop or motion route; the studio row stays degraded until a real
+  operator input adapter exists. `tests/test_status_only.py` (3 tests).
 - M4 offline replay in `src/jcheng_teleop/replay/`: verified capture reader,
   input replay against a fresh conditioner/mapper, a pure anomaly scan, quality
   metrics, and the `jcheng-teleop-replay` CLI (exit 0 clean, 1

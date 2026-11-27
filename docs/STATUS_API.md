@@ -19,6 +19,16 @@ GET http://127.0.0.1:<status_port>/v1/status
 - Stop authority stays in `jcheng-system`; the panel must call the system stop
   path, never this server.
 
+## Status-only entry point
+
+`jcheng_teleop_status --port 8770` serves the same loopback contract without
+starting the test-only intent publisher. The payload reports
+`phase=starting`, `input.present=false` and `input.stale=true`; it never
+fabricates a live sample. This is the endpoint the studio can poll when no
+operator input adapter is connected, and the row must stay degraded. A
+production teleop runtime still needs the `intent_source` approval and a real
+input/lease adapter.
+
 ## Schema `jcheng.teleop.status.v1`
 
 ```json

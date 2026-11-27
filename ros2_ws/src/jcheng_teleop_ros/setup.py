@@ -20,6 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "jcheng_teleop_publisher = jcheng_teleop_ros.publisher:main",
+            "jcheng_teleop_status = jcheng_teleop_ros.status_only:main",
         ],
     },
 )
