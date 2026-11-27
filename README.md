@@ -19,7 +19,9 @@
 > opt-in system stop live in `jcheng-studio`. M6 is In progress at the offline
 > authorization/preflight stage; hardware streaming and stop confirmation are
 > missing. M7 has the offline data side: correction provenance and a
-> mixed-source index; training and rollout are blocked. M9 has the offline
+> mixed-source index; training and rollout are blocked. M8 has the offline
+> authority model (explicit modes/blend, takeover, coverage); timed trials are
+> blocked. M9 has the offline
 > base-intent guard and the mobile-authority design; no `/cmd_vel` is published
 > and no mobile contract exists. The M2 ROS publisher is
 > test-only, so `capability.yaml` stays `offline` with an empty runtime until

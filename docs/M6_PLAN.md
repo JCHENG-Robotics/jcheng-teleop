@@ -13,7 +13,7 @@
 | Supervised authorization record | Implemented: `jcheng.teleop.authorization.v1` (`src/jcheng_teleop/supervised/authorization.py`) |
 | Offline preflight | Implemented: `jcheng-teleop-preflight` validates the record against the profile/contract and reports blockers; it never contacts the system |
 | Position/gripper wire intent | **Missing**: `TeleopCommand` v0.1 carries velocity only (P-001/B3) |
-| System streaming executor | **Missing**: the vendor executor accepts one-joint `JOINT_STEP` at ~5/s (B2) |
+| System streaming executor | **Missing**: `jcheng_vendor` serializes one joint per `JOINT_STEP`; the read-only probe found the vendor `ServosPosition` multi-servo vector, but no privileged bridge and no measured rate/interpolation (B2) |
 | Stop confirmation | **Missing**: `StopResult` has no confirmation field (R5/B9) |
 | PiPER X canonical profile | **Missing**: `robot-profile.v1` cannot express a CAN arm (B4) |
 | e-stop / brake / encoder | **None on the platform**; the software stop is not an e-stop |

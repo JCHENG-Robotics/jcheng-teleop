@@ -11,8 +11,10 @@
 > studio side. M6 is In progress at the offline authorization/preflight stage;
 > hardware streaming and stop confirmation are still missing. M7 has the
 > offline data side: correction provenance and a mixed-source index; training,
-> rollout and evaluation are blocked. M9 has the offline base-intent guard and
-> the mobile-authority design; no `/cmd_vel`, no mobile contract. No
+> rollout and evaluation are blocked. M8 has the offline authority model
+> (explicit modes/blend, takeover, coverage); timed trials are blocked. M9 has
+> the offline base-intent guard and the mobile-authority design; no `/cmd_vel`,
+> no mobile contract. No
 > device or hardware path exists in this repository. The full M0–M9 path is
 > recorded here so that later milestones are not redesigned around today's
 > mock-only system.
@@ -31,7 +33,7 @@
 | Studio teleoperation panel | Complete in the studio (M5): read-only status API here; studio v0.8.0 panel + opt-in system stop (`evidence/20261126_teleop_panel/`) | [docs/STATUS_API.md](docs/STATUS_API.md) |
 | Leader-arm and supervised hardware teleoperation | In progress (M6, offline prerequisites); `jcheng.teleop.authorization.v1` + `jcheng-teleop-preflight` implemented and tested; hardware blocked by the system streaming executor (B2), wire v0.2 (B3), stop confirmation (B9) and no e-stop | [docs/M6_PLAN.md](docs/M6_PLAN.md); `evidence/20261126_m6_preflight/` |
 | Hybrid demonstration/policy data and SmolVLA loop | In progress (M7, offline data side); correction provenance and a mixed-source index (`jcheng.teleop.dataset.v1`) are implemented; training, policy rollout, takeover and evaluation are blocked on M6 and the learning contract | [docs/M7_PLAN.md](docs/M7_PLAN.md); `evidence/20261126_m7_mixed/` |
-| Shared autonomy and human-in-the-loop correction | Planned (M8) | — |
+| Shared autonomy and human-in-the-loop correction | In progress (M8, offline model); the authority state machine, explicit blend, takeover/correction linkage and coverage report are implemented; runtime takeover timing, capture emission and policy trials are blocked | [docs/M8_PLAN.md](docs/M8_PLAN.md); `evidence/20261127_m8_authority/` |
 | Mobile manipulation teleoperation | In progress (M9, offline interface); `jcheng.teleop.base_intent.v1` guard and the mobile-authority design are implemented; no `/cmd_vel`, no mobile contract, no coordinated sim task | [docs/M9_PLAN.md](docs/M9_PLAN.md); `evidence/20261126_m9_design/` |
 
 ## Milestones
@@ -46,7 +48,7 @@
 | M5 | Studio teleoperation panel and session UX | In progress; the read-only status contract and loopback server are implemented; the studio panel, stale-state UX and stop wiring remain | Operator can observe input/lease/deadman state and stop; studio remains HTTP/WS only | [docs/STATUS_API.md](docs/STATUS_API.md) |
 | M6 | Leader-arm and supervised hardware teleoperation | In progress; offline authorization and preflight are implemented. Hardware is blocked: streaming executor, position/gripper wire, stop confirmation, no e-stop, PiPER X canonical profile | Authorized L5 session with bus-verified stop and no unattended motion | [docs/M6_PLAN.md](docs/M6_PLAN.md); `evidence/20261126_m6_preflight/` |
 | M7 | Hybrid autonomous grasp + human demonstration + SmolVLA loop | In progress (offline data side); mixed-source index and correction provenance implemented. Training, rollout under a non-teleop lease, takeover and pre-registered evaluation are blocked | Mixed-source dataset, policy evaluation and human takeover evidence | [docs/M7_PLAN.md](docs/M7_PLAN.md); `evidence/20261126_m7_mixed/` |
-| M8 | Shared autonomy, policy takeover and correction demonstrations | Planned | Authority handover is explicit, bounded and auditable | — |
+| M8 | Shared autonomy, policy takeover and correction demonstrations | In progress (offline model); explicit authority modes, blend, takeover/fault handling and coverage are implemented. Timed takeover trials, correction capture emission and policy scenarios are blocked | Authority handover is explicit, bounded and auditable | [docs/M8_PLAN.md](docs/M8_PLAN.md); `evidence/20261127_m8_authority/` |
 | M9 | Mobile manipulation teleoperation and industrial extension | In progress (offline interface); base-intent guard and mobile-authority design implemented. Base contract, mode arbitration, coordinated simulation and any hardware base motion are missing | Coordinated base/arm intent with separate base authority and stop evidence | [docs/M9_PLAN.md](docs/M9_PLAN.md); `evidence/20261126_m9_design/` |
 
 ## M0 — admission, architecture and contract review
