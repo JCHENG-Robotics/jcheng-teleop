@@ -38,7 +38,8 @@ The review must decide before the ecosystem reaches v1.0:
 | Python standard library | M1 core | PSF | Low |
 | pytest | tests only | MIT | Low |
 | PyYAML | manifest parsing | MIT | Low |
-| ROS 2 Humble | M2 runtime | Apache-2.0 | Low; keep notices |
+| ROS 2 Jazzy | M2 runtime (default) | Apache-2.0 | Low; keep notices |
+| ROS 2 Humble | ArmPi compatibility build | Apache-2.0 | Low; keep notices |
 | CycloneDDS | M2 RMW (system-provided) | EPL-2.0 / EDL | Medium; no vendoring |
 | Gamepad/SDL client library | operator-side adapter, not adopted | per library | Medium; must stay out of the repository |
 | Session recordings | outside the repository | per record | Must not enter git |

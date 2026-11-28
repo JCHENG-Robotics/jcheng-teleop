@@ -85,7 +85,7 @@ hardware.
 
 | Item | Reason | Risk |
 |---|---|---|
-| ROS 2 Humble node, DDS QoS and lease handshake | Publisher and Humble build exist (M2); no lease handshake from teleop, no deployment | No deployed intent path |
+| ROS 2 Jazzy/Humble node, DDS QoS and lease handshake | Publisher and Jazzy/Humble build exist (M2); no lease handshake from teleop, no deployment | No deployed intent path |
 | System teleoperation intake and streaming session | Intake + ROS subscriber merged for mock only; `TeleopState` absent | No production consumer |
 | Simulation bridge and multi-robot teleoperation | Test-only bridge; ArmPi, Gate-2 and PiPER X mock L3 proven on domain 42 + 43 | No hardware or canonical PiPER X profile |
 | Measured state at teleop rate | Mock state only | Position/leader teleoperation not validated |
