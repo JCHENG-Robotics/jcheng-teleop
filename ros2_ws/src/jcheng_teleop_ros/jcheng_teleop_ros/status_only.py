@@ -22,7 +22,7 @@ from .status import status_payload
 from .status_server import StatusServer
 
 CONTRACT_HASH = (
-    "sha256:afca22a42f7163e0351d185d5a8577b0b51f2f3da4b92278f161a4a7d2c35b1c"
+    "sha256:8bc92d18a503ec54db443596eec232b5117f4c6d510f7493d4e107b93a5d3358"
 )
 LIMITATIONS = [
     "read-only status; no lease, intent or motion authority",
