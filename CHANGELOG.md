@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format based on
 
 ## [Unreleased]
 
+### Changed
+
+- The M2 ROS publisher is documented and validated against ROS 2 Jazzy
+  (`ros:jazzy`) as the default host toolchain. The ArmPi robot runtime remains
+  Humble; its build record is kept as compatibility evidence.
+
 ### Added
 
 - M8 offline authority model: `core/authority.py` with `STOPPED`/`POLICY`/

@@ -197,7 +197,8 @@ does not duplicate an ecosystem owner.
 
 | Library | Use | License | Decision |
 |---|---|---|---|
-| ROS 2 Humble / `rclpy` | M2 node only | Apache-2.0 | Adopt in the thin wrapper; test in `ros:humble` |
+| ROS 2 Jazzy / `rclpy` | M2 node (default) | Apache-2.0 | Adopt in the thin wrapper; test in `ros:jazzy` |
+| ROS 2 Humble build | ArmPi compatibility only | Apache-2.0 | Keep the existing `ros:humble` build record; not CI-default |
 | CycloneDDS | System RMW | EPL-2.0 / EDL | System-provided; no vendoring |
 | `sensor_msgs`, `geometry_msgs` | M2 wire types | Apache-2.0 | Adopt via ROS |
 | PyYAML | Profile/binding parsing | MIT | Adopt in core (already ecosystem-standard) |
@@ -234,7 +235,7 @@ system layer and the device boundary operator-side.
 | Milestone | Runtime dependencies | Test/CI dependencies | Deliberately absent |
 |---|---|---|---|
 | M1 | Python stdlib, PyYAML | pytest, PyYAML | ROS, numpy, pydantic, device libraries |
-| M2 | Python stdlib, PyYAML, `rclpy`, `jcheng_interfaces` (Humble) | pytest, `ros:humble` container, system mock | MoveIt Servo, LeRobot, torch, device libraries |
+| M2 | Python stdlib, PyYAML, `rclpy`, `jcheng_interfaces` (Jazzy) | pytest, `ros:jazzy` container, system mock | MoveIt Servo, LeRobot, torch, device libraries |
 | M3 | M2 + filesystem/JSONL | pytest | pyarrow, LeRobot, torch |
 | M4 | M2 + stdlib replay | pytest, benchmark CLI (optional) | LeRobot/torch in teleop; learning owns export |
 | M5 | M2 + studio HTTP/WS client (studio side) | studio tests, Playwright | DDS in studio, device access |
@@ -290,7 +291,8 @@ That means:
   it cannot live here under `hardware_access: none`.
 - Whether the learning adapter runs in learning (preferred) or ships as a
   teleop extra after the dataset contract is frozen.
-- The exact ROS 2 Humble pin for the M2 container and the `rclpy` version.
+- The exact ROS 2 Jazzy pin for the M2 container and the `rclpy` version; the
+  ArmPi robot runtime remains Humble for the vendor stack.
 
 ## 8. Sources
 

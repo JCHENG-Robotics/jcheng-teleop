@@ -6,9 +6,9 @@
 > covered by L1 and in-process L2 tests; M1 is accepted at that level. M2 is
 > In progress: the mock system intake/ROS subscriber and the teleop ROS
 > publisher have landed; ArmPi, Gate-2 and PiPER X mock L3 run through the
-> canonical domain-42 runtime with a domain-43 simulation bridge, and Humble
-> builds pass. PiPER X is simulation-only: no CAN profile, driver bridge or
-> hardware path exists. M3 has started: the capture core (provenance gate,
+> canonical domain-42 runtime with a domain-43 simulation bridge, and Jazzy and
+> Humble builds pass. PiPER X is simulation-only: no CAN profile, driver bridge
+> or hardware path exists. M3 has started: the capture core (provenance gate,
 > non-blocking writer, seal/verify) records mock CLI runs, and the ROS demo
 > harness records labelled observation rows from the system telemetry tap;
 > media, hardware sessions and the 30-episode acceptance are not implemented.
@@ -104,9 +104,10 @@ jcheng-teleop/
 
 - Python 3.10 or newer (CI uses 3.12), `PyYAML` 6.0+ at runtime, `pytest` 7.4+
   for tests. CI pins `pytest==8.3.4` and `PyYAML==6.0.2`.
-- No ROS installation is required for M1. ROS 2 Humble is required for the M2
-  publisher (`ros2_ws/src/jcheng_teleop_ros`), which must be validated in a
-  `ros:humble` container.
+- No ROS installation is required for M1. ROS 2 Jazzy is the default for the M2
+  publisher (`ros2_ws/src/jcheng_teleop_ros`), validated in a `ros:jazzy`
+  container. The ArmPi robot still runs Humble; the Humble build record is kept
+  as robot-side compatibility evidence.
 - No input device and no robot are required. A physical adapter is
   operator-side; this repository consumes normalized samples, not devices.
 - Capture packages and datasets stay outside the repository, under an
